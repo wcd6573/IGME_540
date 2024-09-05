@@ -112,7 +112,7 @@ HRESULT Graphics::Initialize(unsigned int windowWidth, unsigned int windowHeight
 		D3D_DRIVER_TYPE_HARDWARE,	// We want to use the hardware (GPU)
 		0,							// Used when doing software rendering
 		deviceFlags,				// Any special options
-		0,							// Optional array of possible verisons we want as fallbacks
+		0,							// Optional array of possible versions we want as fallbacks
 		0,							// The number of fallbacks in the above param
 		D3D11_SDK_VERSION,			// Current version of the SDK
 		&swapDesc,					// Address of swap chain options
