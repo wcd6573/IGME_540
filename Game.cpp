@@ -25,6 +25,20 @@ using namespace DirectX;
 // --------------------------------------------------------
 void Game::Initialize()
 {
+	// Starter code has these empty scopes to organize, so here's one for ImGui setup
+	{
+		// Initialize ImGui itself & platform/renderer backends
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGui_ImplWin32_Init(Window::Handle());
+		ImGui_ImplDX11_Init(Graphics::Device.Get(), Graphics::Context.Get());
+
+		// Three color styles to choose from
+		ImGui::StyleColorsDark();
+		//ImGui::StyleColorsLight();
+		//ImGui::StyleColorsClassic();
+	}
+
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
@@ -53,19 +67,12 @@ void Game::Initialize()
 		Graphics::Context->PSSetShader(pixelShader.Get(), 0, 0);
 	}
 
-	// Starter code has scopes to organize, so here's one for ImGui setup
-	{
-		// Initialize ImGui itself & platform/renderer backends
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-		ImGui_ImplWin32_Init(Window::Handle());
-		ImGui_ImplDX11_Init(Graphics::Device.Get(), Graphics::Context.Get());
-
-		// Three color styles to choose from
-		ImGui::StyleColorsDark();
-		//ImGui::StyleColorsLight();
-		//ImGui::StyleColorsClassic();
-	}
+	// Initialize the background color float array
+	bgColor = std::shared_ptr<float[]>(new float[4]);
+	bgColor[0] = 0.4f;	// Default to the old reliable, the tried and true:
+	bgColor[1] = 0.6f;	// CORN
+	bgColor[2] = 0.75f;	// FLOWER
+	bgColor[3] = 1.0f;	// BLUE
 }
 
 
@@ -264,35 +271,12 @@ void Game::OnResize()
 void Game::Update(float deltaTime, float totalTime)
 {
 	// Update ImGui at the start of the frame so it has fresh data
-	UpdateImGui(deltaTime);
+	NewFrameUI(deltaTime);
+	BuildUI();
 
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::KeyDown(VK_ESCAPE))
 		Window::Quit();
-}
-
-// --------------------------------------------------------
-// Updates ImGui with time, window dimensions, and input
-// --------------------------------------------------------
-void Game::UpdateImGui(float deltaTime) 
-{
-	// Feed fresh data to ImGui
-	ImGuiIO& io = ImGui::GetIO();
-	io.DeltaTime = deltaTime;
-	io.DisplaySize.x = (float)Window::Width();
-	io.DisplaySize.y = (float)Window::Height();
-
-	// Reset the frame
-	ImGui_ImplDX11_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
-
-	// Determine new input capture
-	Input::SetKeyboardCapture(io.WantCaptureKeyboard);
-	Input::SetMouseCapture(io.WantCaptureMouse);
-
-	// Show the demo window
-	ImGui::ShowDemoWindow();
 }
 
 
@@ -306,8 +290,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	// - At the beginning of Game::Draw() before drawing *anything*
 	{
 		// Clear the back buffer (erase what's on screen) and depth buffer
-		const float color[4] = { 0.4f, 0.6f, 0.75f, 0.0f };
-		Graphics::Context->ClearRenderTargetView(Graphics::BackBufferRTV.Get(),	color);
+		Graphics::Context->ClearRenderTargetView(Graphics::BackBufferRTV.Get(),	bgColor.get());
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
@@ -360,4 +343,62 @@ void Game::Draw(float deltaTime, float totalTime)
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// ------------------------ UPDATE HELPER METHODS -------------------------- //
+///////////////////////////////////////////////////////////////////////////////
+
+// --------------------------------------------------------
+// Updates ImGui with time, window dimensions, and input.
+// Called at the start of a new frame.
+// --------------------------------------------------------
+void Game::NewFrameUI(float deltaTime)
+{
+	// Feed fresh data to ImGui
+	ImGuiIO& io = ImGui::GetIO();
+	io.DeltaTime = deltaTime;
+	io.DisplaySize.x = (float)Window::Width();
+	io.DisplaySize.y = (float)Window::Height();
+
+	// Reset the frame
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	// Determine new input capture
+	Input::SetKeyboardCapture(io.WantCaptureKeyboard);
+	Input::SetMouseCapture(io.WantCaptureMouse);
+}
+
+
+// --------------------------------------------------------
+// Creates ImGui elements for the debug demo window.
+// --------------------------------------------------------
+void Game::BuildUI()
+{
+	if (showDemoUI)
+	{
+		ImGui::ShowDemoWindow();
+	}
+
+	// Create a new window with the given header
+	ImGui::Begin("Inspector");
+
+	// Create a collapsable header for App Details
+	if (ImGui::CollapsingHeader("App Details"))
+	{
+		ImGui::Text("Framerate: %f", ImGui::GetIO().Framerate);
+		ImGui::Text("Window Client Size: %dx%d", Window::Width(), Window::Height());
+		ImGui::ColorEdit4("Background Color", bgColor.get());
+
+		// Fully admit to copying this straight from the Demo code, 
+		// since it's just really nice having it so compact
+		if (ImGui::Button(showDemoUI ? "Hide ImGui Demo Window" : "Show ImGui Demo Window"))
+		{
+			showDemoUI = !showDemoUI;
+		}
+	}
+
+	// Finish creating the ImGui Debug Window
+	ImGui::End();
+}
 

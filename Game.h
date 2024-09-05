@@ -3,6 +3,9 @@
 #include <d3d11.h>
 #include <wrl/client.h>
 
+// Used for shared_ptr
+#include <memory>
+
 class Game
 {
 public:
@@ -24,8 +27,13 @@ private:
 	void LoadShaders();
 	void CreateGeometry();
 
-	// ImGui update helper method
-	void UpdateImGui(float deltaTime);
+	// ImGui helper methods
+	void NewFrameUI(float deltaTime);
+	void BuildUI();
+	bool showDemoUI;
+
+	// 4-element array of floats for holding the background color
+	std::shared_ptr<float[]> bgColor;
 
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
