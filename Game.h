@@ -24,6 +24,9 @@ private:
 	void LoadShaders();
 	void CreateGeometry();
 
+	// ImGui update helper method
+	void UpdateImGui(float deltaTime);
+
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
 	//     Component Object Model, which DirectX objects do
