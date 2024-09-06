@@ -1,5 +1,6 @@
 // William Duprey
 // 9/5/24
+// Game Class Implementation
 // Modified from starter code provided by Prof. Chris Cascioli
 
 #include "Game.h"
@@ -76,11 +77,11 @@ void Game::Initialize()
 
 	// A poem:
 	bgColor[0] = 0.4f;	// Default to the old reliable, the tried and true
-	bgColor[1] = 0.6f;	// CORN
-	bgColor[2] = 0.75f;	// FLOWER
-	bgColor[3] = 1.0f;	// BLUE
+	bgColor[1] = 0.6f;	// Corn
+	bgColor[2] = 0.75f;	// Flower
+	bgColor[3] = 1.0f;	// Blue
 
-	// Set up extra ImGui field for coloring text
+	// Set up extra float array for coloring text
 	textColor = std::shared_ptr<float[]>(new float[4]);
 	for (int i = 0; i < 4; i++)
 	{
@@ -400,6 +401,7 @@ void Game::BuildUI()
 	if (ImGui::CollapsingHeader("App Details"))
 	{
 		ImGui::Text("Framerate: %f", ImGui::GetIO().Framerate);
+		ImGui::Text("Frame Time: %fms", 1000 / ImGui::GetIO().Framerate);
 		ImGui::Text("Window Client Size: %dx%d", Window::Width(), Window::Height());
 		ImGui::Text("Total Pixels: %d", Window::Width() * Window::Height());
 		ImGui::ColorEdit4("Background Color", bgColor.get());
@@ -434,14 +436,18 @@ void Game::BuildUI()
 void Game::BuildExtraUI()
 {
 	// Collapsable header for extra test things
-	if (ImGui::CollapsingHeader("Testing ImGui Elements"))
+	if (ImGui::CollapsingHeader("Testing ImGui Elements\n(to be deleted before next assignment)"))
 	{
 		// Messing around with ImGui table 
 		// This makes a 2x2 grid of float sliders for a color
 		// R	G
 		// B	A
-		// Each PushStyleColor call creates its own ImVec4, so this
+		// Each PushStyleColor call needs its own ImVec4, so this
 		// whole process is probably not worth it just to have some colored text
+		// 
+		// Also, read through this stackoverflow thread to 
+		// figure out how to dynamically change text color
+		// https://stackoverflow.com/questions/61853584/how-can-i-change-text-color-of-my-inputtext-in-imgui
 		ImGui::Text("An alternative (worse) color selector!");
 		
 		// This label doesn't seem to show up anywhere?
@@ -486,8 +492,8 @@ void Game::BuildExtraUI()
 		ImGui::PopStyleColor();
 		ImGui::EndTable();
 
-		// If checked, color the text next to the checkbox with
-		// the color values from the above table
+		// If checked, color the text next to the checkbox 
+		// with the color values from the above table
 		if (updateTextColor)
 		{
 			ImGui::PushStyleColor(ImGuiCol_Text,
@@ -512,7 +518,7 @@ void Game::BuildExtraUI()
 			{
 				if (ImGui::CollapsingHeader("to yet another dropdown"))
 				{
-					if (ImGui::Button("to rock bottom"))
+					if (ImGui::Button("to rock button"))
 					{
 						// Found this forum post to figure out how to
 						// programmatically close a dropdown
