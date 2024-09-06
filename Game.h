@@ -1,3 +1,7 @@
+// William Duprey
+// 9/5/24
+// Modified from starter code provided by Prof. Chris Cascioli
+
 #pragma once
 
 #include <d3d11.h>
@@ -30,10 +34,17 @@ private:
 	// ImGui helper methods
 	void NewFrameUI(float deltaTime);
 	void BuildUI();
+	void BuildExtraUI();	// Pointless extra UI just to experiment with ImGui
+	
+	// Whether the ImGui default demo window is displayed
 	bool showDemoUI;
 
 	// 4-element array of floats for holding the background color
 	std::shared_ptr<float[]> bgColor;
+
+	// Test fields for extra ImGui experimentation
+	std::shared_ptr<float[]> textColor;
+	bool updateTextColor;
 
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the

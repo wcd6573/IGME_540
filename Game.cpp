@@ -1,3 +1,7 @@
+// William Duprey
+// 9/5/24
+// Modified from starter code provided by Prof. Chris Cascioli
+
 #include "Game.h"
 #include "Graphics.h"
 #include "Vertex.h"
@@ -69,10 +73,19 @@ void Game::Initialize()
 
 	// Initialize the background color float array
 	bgColor = std::shared_ptr<float[]>(new float[4]);
-	bgColor[0] = 0.4f;	// Default to the old reliable, the tried and true:
+
+	// A poem:
+	bgColor[0] = 0.4f;	// Default to the old reliable, the tried and true
 	bgColor[1] = 0.6f;	// CORN
 	bgColor[2] = 0.75f;	// FLOWER
 	bgColor[3] = 1.0f;	// BLUE
+
+	// Set up extra ImGui field for coloring text
+	textColor = std::shared_ptr<float[]>(new float[4]);
+	for (int i = 0; i < 4; i++)
+	{
+		textColor[i] = 1.0f;
+	}
 }
 
 
@@ -388,6 +401,7 @@ void Game::BuildUI()
 	{
 		ImGui::Text("Framerate: %f", ImGui::GetIO().Framerate);
 		ImGui::Text("Window Client Size: %dx%d", Window::Width(), Window::Height());
+		ImGui::Text("Total Pixels: %d", Window::Width() * Window::Height());
 		ImGui::ColorEdit4("Background Color", bgColor.get());
 
 		// Fully admit to copying this straight from the Demo code, 
@@ -398,7 +412,121 @@ void Game::BuildUI()
 		}
 	}
 
+	// Extra (pointless) UI for Assignment 2 requirement
+	BuildExtraUI();
+
 	// Finish creating the ImGui Debug Window
 	ImGui::End();
+}
+
+
+// --------------------------------------------------------
+// Creates some more UI elements that don't really do
+// anything. Just practicing and messing around with ImGui.
+// 
+// I may have been a bit lax with coding standards here
+// just because I'll probably delete this method before 
+// the next assignment.
+// 
+// Broken off into this method to make it that much
+// easier to remove later.
+// --------------------------------------------------------
+void Game::BuildExtraUI()
+{
+	// Collapsable header for extra test things
+	if (ImGui::CollapsingHeader("Testing ImGui Elements"))
+	{
+		// Messing around with ImGui table 
+		// This makes a 2x2 grid of float sliders for a color
+		// R	G
+		// B	A
+		// Each PushStyleColor call creates its own ImVec4, so this
+		// whole process is probably not worth it just to have some colored text
+		ImGui::Text("An alternative (worse) color selector!");
+		
+		// This label doesn't seem to show up anywhere?
+		ImGui::BeginTable("Table Test", 2);	
+
+		// Start at row 0 col 0
+		ImGui::TableNextRow();
+		ImGui::TableSetColumnIndex(0);
+
+		// Red slider
+		ImGui::PushStyleColor(ImGuiCol_Text,
+			ImVec4(textColor[0], 0, 0, 1));
+		ImGui::SliderFloat("R", &textColor[0], 0, 1);
+		ImGui::PopStyleColor();
+
+		// Go to row 0 col 1
+		ImGui::TableNextColumn();
+
+		// Green slider
+		ImGui::PushStyleColor(ImGuiCol_Text,
+			ImVec4(0, textColor[1], 0, 1));
+		ImGui::SliderFloat("G", &textColor[1], 0, 1);
+		ImGui::PopStyleColor();
+
+		// Go to row 1 col 0
+		ImGui::TableNextRow();
+		ImGui::TableSetColumnIndex(0);
+
+		// Blue slider
+		ImGui::PushStyleColor(ImGuiCol_Text,
+			ImVec4(0, 0, textColor[2], 1));
+		ImGui::SliderFloat("B", &textColor[2], 0, 1);
+		ImGui::PopStyleColor();
+
+		// Go to row 1 col 1
+		ImGui::TableNextColumn();
+
+		// Alpha slider
+		ImGui::PushStyleColor(ImGuiCol_Text,
+			ImVec4(1, 1, 1, textColor[3]));
+		ImGui::SliderFloat("A", &textColor[3], 0, 1);
+		ImGui::PopStyleColor();
+		ImGui::EndTable();
+
+		// If checked, color the text next to the checkbox with
+		// the color values from the above table
+		if (updateTextColor)
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text,
+				ImVec4(
+					textColor[0], textColor[1],
+					textColor[2], textColor[3]));
+			ImGui::Checkbox("Color me surprised", &updateTextColor);
+			ImGui::PopStyleColor();
+		}
+		else
+		{
+			ImGui::Checkbox("Color me", &updateTextColor);
+		}
+
+		// Dropdown 
+		//		into a dropdown 
+		//			into a dropdown 
+		//				into a button that closes all of them
+		if(ImGui::CollapsingHeader("Dropdown"))
+		{
+			if(ImGui::CollapsingHeader("to a dropdown"))
+			{
+				if (ImGui::CollapsingHeader("to yet another dropdown"))
+				{
+					if (ImGui::Button("to rock bottom"))
+					{
+						// Found this forum post to figure out how to
+						// programmatically close a dropdown
+						// https://www.unknowncheats.me/forum/programming-for-beginners/387081-imgui-collapsingheader.html
+						ImGui::GetStateStorage()->SetInt(
+							ImGui::GetID("Dropdown"), 0);
+						ImGui::GetStateStorage()->SetInt(
+							ImGui::GetID("to a dropdown"), 0);
+						ImGui::GetStateStorage()->SetInt(
+							ImGui::GetID("to yet another dropdown"), 0);
+					}
+				}
+			}
+		}
+	}
 }
 
