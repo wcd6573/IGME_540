@@ -15,10 +15,14 @@
 class Mesh
 {
 public:
-	Mesh(Vertex* vertices, int vertexCount, int* indices, int indexCount);
+	// Underscores used for potentially ambiguous param names
+	Mesh(Vertex* vertices, int _vertexCount, int* indices, int _indexCount);
 	~Mesh();
-	Mesh(const Mesh&);
-	Mesh& operator=(const Mesh&);
+
+	// Removing these since I don't want to have to figure out how
+	// to copy over a ComPtr<ID3D11Buffer>
+	Mesh(const Mesh&) = delete;
+	Mesh& operator=(const Mesh&) = delete;
 
 	// Getters for the private fields
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetVertexBuffer();
