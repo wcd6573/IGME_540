@@ -15,7 +15,7 @@
 // Code mostly copied from Game.cpp starter code (including comments, 
 // so I can continue attempting to understand things).
 // ----------------------------------------------------------------------------
-Mesh::Mesh(Vertex* vertices, int _vertexCount, int* indices, int _indexCount)
+Mesh::Mesh(Vertex* vertices, UINT _vertexCount, UINT* indices, UINT _indexCount)
 {
 	vertexCount = _vertexCount;
 	indexCount = _indexCount;
@@ -77,7 +77,7 @@ Mesh::Mesh(Vertex* vertices, int _vertexCount, int* indices, int _indexCount)
 
 // --------------------------------------------------------
 // Mesh destructor. ComPtrs will clean themselves up, 
-// so there's nothing here that needs deleting.
+// so there's nothing here that needs deleting (yet).
 // --------------------------------------------------------
 Mesh::~Mesh()
 {
@@ -92,7 +92,7 @@ Microsoft::WRL::ComPtr<ID3D11Buffer> Mesh::GetVertexBuffer()
 	return vertexBuffer;
 }
 
-int Mesh::GetVertexCount()
+UINT Mesh::GetVertexCount()
 {
 	return vertexCount;
 }
@@ -102,7 +102,7 @@ Microsoft::WRL::ComPtr<ID3D11Buffer> Mesh::GetIndexBuffer()
 	return indexBuffer;
 }
 
-int Mesh::GetIndexCount()
+UINT Mesh::GetIndexCount()
 {
 	return indexCount;
 }
@@ -111,8 +111,39 @@ int Mesh::GetIndexCount()
 ///////////////////////////////////////////////////////////////////////////////
 // --------------------------------- DRAW ---------------------------------- //
 ///////////////////////////////////////////////////////////////////////////////
-
+// --------------------------------------------------------
+// Sets up vertex and index buffers for the input assembler,
+// then draws the indexed vertices.
+// 
+// Game::Draw has these parameters, which I don't
+// think are used anywhere, but I have them here too,
+// in case they're ever needed.
+// 
+// Code mostly copied from the Game::Draw() starter code,
+// including comments, so I can continue to understand.
+// --------------------------------------------------------
 void Mesh::Draw(float deltaTime, float totalTime)
 {
+	// DRAW geometry
+	// - These steps are generally repeated for EACH object you draw
+	// - Other Direct3D calls will also be necessary to do more complex things
+	{
+		// Set buffers in the input assembler (IA) stage
+		//  - Do this ONCE PER OBJECT, since each object may have different geometry
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+		Graphics::Context->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+		Graphics::Context->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
+		// Tell Direct3D to draw
+		//  - Begins the rendering pipeline on the GPU
+		//  - Do this ONCE PER OBJECT you intend to draw
+		//  - This will use all currently set Direct3D resources (shaders, buffers, etc)
+		//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
+		//     vertices in the currently set VERTEX BUFFER
+		Graphics::Context->DrawIndexed(
+			indexCount, // The number of indices to use (we could draw a subset if we wanted)
+			0,			// Offset to the first index we want to use
+			0);			// Offset to add to each index when looking up vertices
+	}
 }
