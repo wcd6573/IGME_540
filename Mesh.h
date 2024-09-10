@@ -22,10 +22,9 @@ public:
 	Mesh(Vertex* vertices, UINT _vertexCount, UINT* indices, UINT _indexCount);
 	~Mesh();
 
-	// Removing these since I don't want to have to figure out how
-	// to copy over a ComPtr<ID3D11Buffer>
-	Mesh(const Mesh&) = delete;
-	Mesh& operator=(const Mesh&) = delete;
+	// Copy constructor and copy assignment operator (scary)
+	Mesh(const Mesh& other);
+	Mesh& operator=(const Mesh& other);
 
 	// Getters for the private fields
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetVertexBuffer();

@@ -83,6 +83,44 @@ Mesh::~Mesh()
 {
 }
 
+// --------------------------------------------------------
+// Copy constructor for a Mesh. Hopefully no memory leaks!
+// ComPtrs will ensure that no D3D objects are
+// left floating around in memory (I hope).
+// --------------------------------------------------------
+Mesh::Mesh(const Mesh& other)
+{
+	// Copy over vertex buffer fields
+	vertexBuffer = other.vertexBuffer;
+	vertexCount = other.vertexCount;
+
+	// Copy over index buffer fields
+	indexBuffer = other.indexBuffer;
+	indexCount = other.indexCount;
+}
+
+// --------------------------------------------------------
+// Copy assignment operator for a Mesh.
+// ComPtrs will ensure that no D3D objects are
+// left floating around in memory (I hope).
+// --------------------------------------------------------
+Mesh& Mesh::operator=(const Mesh& other)
+{
+	// Don't let a Mesh copy to itself
+	if (this != &other)
+	{
+		// Copy over vertex buffer fields
+		vertexBuffer = other.vertexBuffer;
+		vertexCount = other.vertexCount;
+
+		// Copy over index buffer fields
+		indexBuffer = other.indexBuffer;
+		indexCount = other.indexCount;
+	}
+
+	return *this;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // ------------------------------- GETTERS --------------------------------- //

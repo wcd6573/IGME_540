@@ -58,7 +58,7 @@ void Game::Initialize()
 		// Tell the input assembler (IA) stage of the pipeline what kind of
 		// geometric primitives (points, lines or triangles) we want to draw.  
 		// Essentially: "What kind of shape should the GPU draw with our vertices?"
-		Graphics::Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		Graphics::Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
 		// Ensure the pipeline knows how to interpret all the numbers stored in
 		// the vertex buffer. For this course, all of your vertices will probably
@@ -73,7 +73,7 @@ void Game::Initialize()
 	}
 
 	// Initialize the background color float array
-	bgColor = std::shared_ptr<float[]>(new float[4]);
+	bgColor = std::make_shared<float[]>(4);
 
 	// A poem:
 	bgColor[0] = 0.4f;	// Default to the old reliable, the tried and true
@@ -82,7 +82,7 @@ void Game::Initialize()
 	bgColor[3] = 1.0f;	// Blue
 
 	// Set up extra float array for coloring text
-	textColor = std::shared_ptr<float[]>(new float[4]);
+	textColor = std::make_shared<float[]>(4);
 	for (int i = 0; i < 4; i++)
 	{
 		textColor[i] = 1.0f;
@@ -187,6 +187,10 @@ void Game::CreateGeometry()
 	XMFLOAT4 red = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
 	XMFLOAT4 green = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
 	XMFLOAT4 blue = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+	XMFLOAT4 white = XMFLOAT4(1, 1, 1, 1);
+	XMFLOAT4 black = XMFLOAT4(0, 0, 0, 1);
+	XMFLOAT4 darkGrey = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
+	XMFLOAT4 grey = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 
 	// Set up the vertices of the triangle we would like to draw
 	// - We're going to copy this array, exactly as it exists in CPU memory
@@ -200,6 +204,8 @@ void Game::CreateGeometry()
 	//    knowing the exact size (in pixels) of the image/window/etc.  
 	// - Long story short: Resizing the window also resizes the triangle,
 	//    since we're describing the triangle in terms of the window itself
+
+	// Set up starter triangle vertices and indices
 	Vertex vertices[] =
 	{
 		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
@@ -214,59 +220,40 @@ void Game::CreateGeometry()
 	// - But just to see how it's done...
 	unsigned int indices[] = { 0, 1, 2 };
 
-
-	// Create a VERTEX BUFFER
-	// - This holds the vertex data of triangles for a single object
-	// - This buffer is created on the GPU, which is where the data needs to
-	//    be if we want the GPU to act on it (as in: draw it to the screen)
+	// Add the default starter code triangle
+	//meshes.push_back(std::make_shared<Mesh>(
+	//	vertices, 3, indices, 3));
+	
+	Vertex hatVertices[] =
 	{
-		// First, we need to describe the buffer we want Direct3D to make on the GPU
-		//  - Note that this variable is created on the stack since we only need it once
-		//  - After the buffer is created, this description variable is unnecessary
-		D3D11_BUFFER_DESC vbd = {};
-		vbd.Usage = D3D11_USAGE_IMMUTABLE;	// Will NEVER change
-		vbd.ByteWidth = sizeof(Vertex) * 3;       // 3 = number of vertices in the buffer
-		vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER; // Tells Direct3D this is a vertex buffer
-		vbd.CPUAccessFlags = 0;	// Note: We cannot access the data from C++ (this is good)
-		vbd.MiscFlags = 0;
-		vbd.StructureByteStride = 0;
+		// Comment coordinates relative to x: 0-12, y: 0-14
+		{ XMFLOAT3(+0.0f, 0.25f, +0.0f), black },	// 0, 3
+		{ XMFLOAT3(0.07f, +.33f, +0.0f), grey },	// 1, 4
+		{ XMFLOAT3(0.07f, +.17f, +0.0f), black },	// 1, 2
+		{ XMFLOAT3(0.14f, 0.25f, +0.0f), grey },	// 2, 3
+		{ XMFLOAT3(0.21f, 0.08f, +0.0f), black },	// 3, 1
+		{ XMFLOAT3(.286f, +.17f, +0.0f), grey },	// 4, 2
+		{ XMFLOAT3(.429f, +0.0f, +0.0f), black },	// 6, 0
+		{ XMFLOAT3(.714f, +.17f, +0.0f), grey },	// 10, 2
+		{ XMFLOAT3(.571f, +0.0f, +0.0f), black },	// 8, 0
+		{ XMFLOAT3(.786f, +.08f, +0.0f), black },	// 11, 1
+		{ XMFLOAT3(.857f, +.25f, +0.0f), grey },	// 12, 3
+	};
 
-		// Create the proper struct to hold the initial vertex data
-		// - This is how we initially fill the buffer with data
-		// - Essentially, we're specifying a pointer to the data to copy
-		D3D11_SUBRESOURCE_DATA initialVertexData = {};
-		initialVertexData.pSysMem = vertices; // pSysMem = Pointer to System Memory
+	unsigned int hatIndices[] = { 
+		0, 1, 2,
+		1, 2, 3,
+		2, 3, 4,
+		3, 4, 5,
+		4, 5, 6,
+		5, 6, 7,
+		6, 7, 8,
+		7, 8, 9,
+		8, 10, 11,
+	};
 
-		// Actually create the buffer on the GPU with the initial data
-		// - Once we do this, we'll NEVER CHANGE DATA IN THE BUFFER AGAIN
-		Graphics::Device->CreateBuffer(&vbd, &initialVertexData, vertexBuffer.GetAddressOf());
-	}
-
-	// Create an INDEX BUFFER
-	// - This holds indices to elements in the vertex buffer
-	// - This is most useful when vertices are shared among neighboring triangles
-	// - This buffer is created on the GPU, which is where the data needs to
-	//    be if we want the GPU to act on it (as in: draw it to the screen)
-	{
-		// Describe the buffer, as we did above, with two major differences
-		//  - Byte Width (3 unsigned integers vs. 3 whole vertices)
-		//  - Bind Flag (used as an index buffer instead of a vertex buffer) 
-		D3D11_BUFFER_DESC ibd = {};
-		ibd.Usage = D3D11_USAGE_IMMUTABLE;	// Will NEVER change
-		ibd.ByteWidth = sizeof(unsigned int) * 3;	// 3 = number of indices in the buffer
-		ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;	// Tells Direct3D this is an index buffer
-		ibd.CPUAccessFlags = 0;	// Note: We cannot access the data from C++ (this is good)
-		ibd.MiscFlags = 0;
-		ibd.StructureByteStride = 0;
-
-		// Specify the initial data for this buffer, similar to above
-		D3D11_SUBRESOURCE_DATA initialIndexData = {};
-		initialIndexData.pSysMem = indices; // pSysMem = Pointer to System Memory
-
-		// Actually create the buffer with the initial data
-		// - Once we do this, we'll NEVER CHANGE THE BUFFER AGAIN
-		Graphics::Device->CreateBuffer(&ibd, &initialIndexData, indexBuffer.GetAddressOf());
-	}
+	meshes.push_back(std::make_shared<Mesh>(
+		hatVertices, 11, hatIndices, 27));
 }
 
 
@@ -309,29 +296,9 @@ void Game::Draw(float deltaTime, float totalTime)
 	}
 
 	// DRAW geometry
-	// - These steps are generally repeated for EACH object you draw
-	// - Other Direct3D calls will also be necessary to do more complex things
+	for (int i = 0; i < meshes.size(); ++i) 
 	{
-		// Set buffers in the input assembler (IA) stage
-		//  - Do this ONCE PER OBJECT, since each object may have different geometry
-		//  - For this demo, this step *could* simply be done once during Init()
-		//  - However, this needs to be done between EACH DrawIndexed() call
-		//     when drawing different geometry, so it's here as an example
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
-		Graphics::Context->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
-		Graphics::Context->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-		// Tell Direct3D to draw
-		//  - Begins the rendering pipeline on the GPU
-		//  - Do this ONCE PER OBJECT you intend to draw
-		//  - This will use all currently set Direct3D resources (shaders, buffers, etc)
-		//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
-		//     vertices in the currently set VERTEX BUFFER
-		Graphics::Context->DrawIndexed(
-			3,     // The number of indices to use (we could draw a subset if we wanted)
-			0,     // Offset to the first index we want to use
-			0);    // Offset to add to each index when looking up vertices
+		meshes[i]->Draw(deltaTime, totalTime);
 	}
 
 	// Frame END
