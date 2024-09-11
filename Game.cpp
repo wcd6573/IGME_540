@@ -58,7 +58,7 @@ void Game::Initialize()
 		// Tell the input assembler (IA) stage of the pipeline what kind of
 		// geometric primitives (points, lines or triangles) we want to draw.  
 		// Essentially: "What kind of shape should the GPU draw with our vertices?"
-		Graphics::Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+		Graphics::Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		// Ensure the pipeline knows how to interpret all the numbers stored in
 		// the vertex buffer. For this course, all of your vertices will probably
@@ -80,13 +80,6 @@ void Game::Initialize()
 	bgColor[1] = 0.6f;	// Corn
 	bgColor[2] = 0.75f;	// Flower
 	bgColor[3] = 1.0f;	// Blue
-
-	// Set up extra float array for coloring text
-	textColor = std::make_shared<float[]>(4);
-	for (int i = 0; i < 4; i++)
-	{
-		textColor[i] = 1.0f;
-	}
 }
 
 
@@ -208,8 +201,8 @@ void Game::CreateGeometry()
 	// Set up starter triangle vertices and indices
 	Vertex vertices[] =
 	{
-		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
-		{ XMFLOAT3(+0.5f, -0.5f, +0.0f), blue },
+		{ XMFLOAT3(-0.25f, +0.25f, +0.0f), red },
+		{ XMFLOAT3(+0.00f, -0.5f, +0.0f), blue },
 		{ XMFLOAT3(-0.5f, -0.5f, +0.0f), green },
 	};
 
@@ -221,39 +214,58 @@ void Game::CreateGeometry()
 	unsigned int indices[] = { 0, 1, 2 };
 
 	// Add the default starter code triangle
-	//meshes.push_back(std::make_shared<Mesh>(
-	//	vertices, 3, indices, 3));
+	meshes.push_back(std::make_shared<Mesh>(
+		vertices, 3, indices, 3));
 	
 	Vertex hatVertices[] =
 	{
 		// Comment coordinates relative to x: 0-12, y: 0-14
-		{ XMFLOAT3(+0.0f, 0.25f, +0.0f), black },	// 0, 3
-		{ XMFLOAT3(0.07f, +.33f, +0.0f), grey },	// 1, 4
-		{ XMFLOAT3(0.07f, +.17f, +0.0f), black },	// 1, 2
-		{ XMFLOAT3(0.14f, 0.25f, +0.0f), grey },	// 2, 3
-		{ XMFLOAT3(0.21f, 0.08f, +0.0f), black },	// 3, 1
-		{ XMFLOAT3(.286f, +.17f, +0.0f), grey },	// 4, 2
-		{ XMFLOAT3(.429f, +0.0f, +0.0f), black },	// 6, 0
-		{ XMFLOAT3(.714f, +.17f, +0.0f), grey },	// 10, 2
-		{ XMFLOAT3(.571f, +0.0f, +0.0f), black },	// 8, 0
-		{ XMFLOAT3(.786f, +.08f, +0.0f), black },	// 11, 1
-		{ XMFLOAT3(.857f, +.25f, +0.0f), grey },	// 12, 3
+		// (I sketched this out on graph paper and just labeled points
+		// like this as I went)
+		// Vertices for the brim:
+		{ XMFLOAT3(+0.0f, 0.25f, +0.0f), black },	// 0 -- 0, 3
+		{ XMFLOAT3(0.07f, +.33f, +0.0f), grey },	// 1 -- 1, 4
+		{ XMFLOAT3(0.07f, +.17f, +0.0f), black },	// 2 -- 1, 2
+		{ XMFLOAT3(0.14f, 0.25f, +0.0f), grey },	// 3 -- 2, 3
+		{ XMFLOAT3(0.21f, 0.08f, +0.0f), black },	// 4 -- 3, 1
+		{ XMFLOAT3(.286f, +.17f, +0.0f), darkGrey },// 5 -- 4, 2
+		{ XMFLOAT3(.429f, +0.0f, +0.0f), black },	// 6 -- 6, 0
+		{ XMFLOAT3(.714f, +.17f, +0.0f), darkGrey },// 7 -- 10, 2
+		{ XMFLOAT3(.571f, +0.0f, +0.0f), black },	// 8 -- 8, 0
+		{ XMFLOAT3(.786f, +.08f, +0.0f), black },	// 9 -- 11, 1
+		{ XMFLOAT3(.857f, +.25f, +0.0f), grey },	// 10 - 12, 3
+		{ XMFLOAT3(.929f, +.17f, +0.0f), black },	// 11 - 13, 2
+		{ XMFLOAT3(.929f, +.33f, +0.0f), grey },	// 12 - 13, 4
+		{ XMFLOAT3(+1.0f, +.25f, +0.0f), black },	// 13 - 14, 3
+		// Vertices for the band:
+		{ XMFLOAT3(.786f, .417f, +0.0f), darkGrey },// 14 - 11, 5
+		{ XMFLOAT3(.214f, .417f, +0.0f), darkGrey },// 15 - 3, 5
+		// Vertices for the top:
+		{ XMFLOAT3(.929f, +1.0f, +0.0f), grey },	// 16 - 13, 12
+		{ XMFLOAT3(+.07f, +1.0f, +0.0f), grey },	// 17 - 1, 12
 	};
 
 	unsigned int hatIndices[] = { 
 		0, 1, 2,
-		1, 2, 3,
+		2, 1, 3,	// Vertices must be clockwise for triangle to face correctly
 		2, 3, 4,
-		3, 4, 5,
+		4, 3, 5,	
 		4, 5, 6,
-		5, 6, 7,
+		6, 5, 7,
 		6, 7, 8,
-		7, 8, 9,
-		8, 10, 11,
+		8, 7, 9,
+		9, 7, 10,
+		9, 10, 11,
+		11, 10, 12,
+		11, 12, 13,
+		5, 14, 7,
+		5, 15, 14,
+		15, 16, 14,
+		15, 17, 16
 	};
 
 	meshes.push_back(std::make_shared<Mesh>(
-		hatVertices, 11, hatIndices, 27));
+		hatVertices, 18, hatIndices, 48));
 }
 
 
@@ -381,125 +393,7 @@ void Game::BuildUI()
 		}
 	}
 
-	// Extra (pointless) UI for Assignment 2 requirement
-	BuildExtraUI();
-
 	// Finish creating the ImGui Debug Window
 	ImGui::End();
-}
-
-
-// --------------------------------------------------------
-// Creates some more UI elements that don't really do
-// anything. Just practicing and messing around with ImGui.
-// 
-// I may have been a bit lax with coding standards here
-// just because I'll probably delete this method before 
-// the next assignment.
-// 
-// Broken off into this method to make it that much
-// easier to remove later.
-// --------------------------------------------------------
-void Game::BuildExtraUI()
-{
-	// Collapsable header for extra test things
-	if (ImGui::CollapsingHeader("Testing ImGui Elements\n(to be deleted before next assignment)"))
-	{
-		// Messing around with ImGui table 
-		// This makes a 2x2 grid of float sliders for a color
-		// R	G
-		// B	A
-		// Each PushStyleColor call needs its own ImVec4, so this
-		// whole process is probably not worth it just to have some colored text
-		// 
-		// Also, read through this stackoverflow thread to 
-		// figure out how to dynamically change text color
-		// https://stackoverflow.com/questions/61853584/how-can-i-change-text-color-of-my-inputtext-in-imgui
-		ImGui::Text("An alternative (worse) color selector!");
-		
-		// This label doesn't seem to show up anywhere?
-		ImGui::BeginTable("Table Test", 2);	
-
-		// Start at row 0 col 0
-		ImGui::TableNextRow();
-		ImGui::TableSetColumnIndex(0);
-
-		// Red slider
-		ImGui::PushStyleColor(ImGuiCol_Text,
-			ImVec4(textColor[0], 0, 0, 1));
-		ImGui::SliderFloat("R", &textColor[0], 0, 1);
-		ImGui::PopStyleColor();
-
-		// Go to row 0 col 1
-		ImGui::TableNextColumn();
-
-		// Green slider
-		ImGui::PushStyleColor(ImGuiCol_Text,
-			ImVec4(0, textColor[1], 0, 1));
-		ImGui::SliderFloat("G", &textColor[1], 0, 1);
-		ImGui::PopStyleColor();
-
-		// Go to row 1 col 0
-		ImGui::TableNextRow();
-		ImGui::TableSetColumnIndex(0);
-
-		// Blue slider
-		ImGui::PushStyleColor(ImGuiCol_Text,
-			ImVec4(0, 0, textColor[2], 1));
-		ImGui::SliderFloat("B", &textColor[2], 0, 1);
-		ImGui::PopStyleColor();
-
-		// Go to row 1 col 1
-		ImGui::TableNextColumn();
-
-		// Alpha slider
-		ImGui::PushStyleColor(ImGuiCol_Text,
-			ImVec4(1, 1, 1, textColor[3]));
-		ImGui::SliderFloat("A", &textColor[3], 0, 1);
-		ImGui::PopStyleColor();
-		ImGui::EndTable();
-
-		// If checked, color the text next to the checkbox 
-		// with the color values from the above table
-		if (updateTextColor)
-		{
-			ImGui::PushStyleColor(ImGuiCol_Text,
-				ImVec4(
-					textColor[0], textColor[1],
-					textColor[2], textColor[3]));
-			ImGui::Checkbox("Color me surprised", &updateTextColor);
-			ImGui::PopStyleColor();
-		}
-		else
-		{
-			ImGui::Checkbox("Color me", &updateTextColor);
-		}
-
-		// Dropdown 
-		//		into a dropdown 
-		//			into a dropdown 
-		//				into a button that closes all of them
-		if(ImGui::CollapsingHeader("Dropdown"))
-		{
-			if(ImGui::CollapsingHeader("to a dropdown"))
-			{
-				if (ImGui::CollapsingHeader("to yet another dropdown"))
-				{
-					if (ImGui::Button("to rock button"))
-					{
-						// Found this forum post to figure out how to
-						// programmatically close a dropdown
-						// https://www.unknowncheats.me/forum/programming-for-beginners/387081-imgui-collapsingheader.html
-						ImGui::GetStateStorage()->SetInt(
-							ImGui::GetID("Dropdown"), 0);
-						ImGui::GetStateStorage()->SetInt(
-							ImGui::GetID("to a dropdown"), 0);
-						ImGui::GetStateStorage()->SetInt(
-							ImGui::GetID("to yet another dropdown"), 0);
-					}
-				}
-			}
-		}
-	}
 }
 

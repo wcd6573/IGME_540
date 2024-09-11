@@ -36,17 +36,12 @@ private:
 	// ImGui helper methods
 	void NewFrameUI(float deltaTime);
 	void BuildUI();
-	void BuildExtraUI();	// Pointless extra UI just to experiment with ImGui
 	
 	// Whether the ImGui default demo window is displayed
 	bool showDemoUI;
 
 	// 4-element array of floats for holding the background color
 	std::shared_ptr<float[]> bgColor;
-
-	// Test fields for extra ImGui experimentation
-	std::shared_ptr<float[]> textColor;
-	bool updateTextColor;
 
 	// Vector used to hold all of the meshes used by Game
 	std::vector<std::shared_ptr<Mesh>> meshes;
