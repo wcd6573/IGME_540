@@ -19,7 +19,9 @@ class Mesh
 {
 public:
 	// Underscores used for potentially ambiguous param names
-	Mesh(Vertex* vertices, UINT _vertexCount, UINT* indices, UINT _indexCount);
+	Mesh(Vertex* vertices, UINT _vertexCount, 
+		UINT* indices, UINT _indexCount,
+		const char* _name);
 	~Mesh();
 
 	// Copy constructor and copy assignment operator (scary)
@@ -31,6 +33,7 @@ public:
 	UINT GetIndexCount();
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetIndexBuffer();
 	UINT GetVertexCount();
+	const char* GetName();
 
 	// Sets buffers and draws the mesh to the screen
 	void Draw(float deltaTime, float totalTime);
@@ -43,5 +46,8 @@ private:
 	// Indices of the vertices of the triangles making up the mesh
 	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
 	UINT indexCount;
+
+	// Name of the mesh for ImGui to display
+	const char* name;
 };
 

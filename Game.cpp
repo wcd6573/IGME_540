@@ -199,7 +199,7 @@ void Game::CreateGeometry()
 	//    since we're describing the triangle in terms of the window itself
 
 	// Set up starter triangle vertices and indices
-	Vertex vertices[] =
+	Vertex triVertices[] =
 	{
 		{ XMFLOAT3(-0.25f, +0.25f, +0.0f), red },
 		{ XMFLOAT3(+0.00f, -0.5f, +0.0f), blue },
@@ -211,11 +211,11 @@ void Game::CreateGeometry()
 	// - Indices are technically not required if the vertices are in the buffer 
 	//    in the correct order and each one will be used exactly once
 	// - But just to see how it's done...
-	unsigned int indices[] = { 0, 1, 2 };
+	unsigned int triIndices[] = { 0, 1, 2 };
 
 	// Add the default starter code triangle
 	meshes.push_back(std::make_shared<Mesh>(
-		vertices, 3, indices, 3));
+		triVertices, 3, triIndices, 3, "Starter Triangle"));
 	
 	Vertex hatVertices[] =
 	{
@@ -223,31 +223,32 @@ void Game::CreateGeometry()
 		// (I sketched this out on graph paper and just labeled points
 		// like this as I went)
 		// Vertices for the brim:
-		{ XMFLOAT3(+0.0f, 0.25f, +0.0f), black },	// 0 -- 0, 3
-		{ XMFLOAT3(0.07f, +.33f, +0.0f), grey },	// 1 -- 1, 4
-		{ XMFLOAT3(0.07f, +.17f, +0.0f), black },	// 2 -- 1, 2
-		{ XMFLOAT3(0.14f, 0.25f, +0.0f), grey },	// 3 -- 2, 3
-		{ XMFLOAT3(0.21f, 0.08f, +0.0f), black },	// 4 -- 3, 1
-		{ XMFLOAT3(.286f, +.17f, +0.0f), darkGrey },// 5 -- 4, 2
-		{ XMFLOAT3(.429f, +0.0f, +0.0f), black },	// 6 -- 6, 0
-		{ XMFLOAT3(.714f, +.17f, +0.0f), darkGrey },// 7 -- 10, 2
-		{ XMFLOAT3(.571f, +0.0f, +0.0f), black },	// 8 -- 8, 0
-		{ XMFLOAT3(.786f, +.08f, +0.0f), black },	// 9 -- 11, 1
-		{ XMFLOAT3(.857f, +.25f, +0.0f), grey },	// 10 - 12, 3
-		{ XMFLOAT3(.929f, +.17f, +0.0f), black },	// 11 - 13, 2
-		{ XMFLOAT3(.929f, +.33f, +0.0f), grey },	// 12 - 13, 4
-		{ XMFLOAT3(+1.0f, +.25f, +0.0f), black },	// 13 - 14, 3
-		// Vertices for the band:
-		{ XMFLOAT3(.786f, .417f, +0.0f), darkGrey },// 14 - 11, 5
-		{ XMFLOAT3(.214f, .417f, +0.0f), darkGrey },// 15 - 3, 5
-		// Vertices for the top:
-		{ XMFLOAT3(.929f, +1.0f, +0.0f), grey },	// 16 - 13, 12
-		{ XMFLOAT3(+.07f, +1.0f, +0.0f), grey },	// 17 - 1, 12
+		{ XMFLOAT3(+0.0f, 0.25f, +0.0f), grey },	// 0 -- (0, 3)
+		{ XMFLOAT3(0.07f, +.33f, +0.0f), grey },	// 1 -- (1, 4)
+		{ XMFLOAT3(0.07f, +.17f, +0.0f), grey },	// 2 -- (1, 2)
+		{ XMFLOAT3(0.14f, 0.25f, +0.0f), grey },	// 3 -- (2, 3)
+		{ XMFLOAT3(0.21f, 0.08f, +0.0f), grey },	// 4 -- (3, 1)
+		{ XMFLOAT3(.286f, +.17f, +0.0f), darkGrey },// 5 -- (4, 2)
+		{ XMFLOAT3(.429f, +0.0f, +0.0f), grey },	// 6 -- (6, 0)
+		{ XMFLOAT3(.714f, +.17f, +0.0f), darkGrey },// 7 -- (10, 2)
+		{ XMFLOAT3(.571f, +0.0f, +0.0f), grey },	// 8 -- (8, 0)
+		{ XMFLOAT3(.786f, +.08f, +0.0f), grey },	// 9 -- (11, 1)
+		{ XMFLOAT3(.857f, +.25f, +0.0f), grey },	// 10 - (12, 3)
+		{ XMFLOAT3(.929f, +.17f, +0.0f), grey },	// 11 - (13, 2)
+		{ XMFLOAT3(.929f, +.33f, +0.0f), grey },	// 12 - (13, 4)
+		{ XMFLOAT3(+1.0f, +.25f, +0.0f), grey },	// 13 - (14, 3)
+		// Vertices for the band:							
+		{ XMFLOAT3(.786f, .417f, +0.0f), darkGrey },// 14 - (11, 5)
+		{ XMFLOAT3(.214f, .417f, +0.0f), darkGrey },// 15 - (3, 5)
+		// Vertices for the top:							
+		{ XMFLOAT3(.929f, +1.0f, +0.0f), grey },	// 16 - (13, 12)
+		{ XMFLOAT3(+.07f, +1.0f, +0.0f), grey },	// 17 - (1, 12)
 	};
 
+	// Vertices must be clockwise for triangle to face correctly
 	unsigned int hatIndices[] = { 
-		0, 1, 2,
-		2, 1, 3,	// Vertices must be clockwise for triangle to face correctly
+		0, 1, 2,		// Brim
+		2, 1, 3,	
 		2, 3, 4,
 		4, 3, 5,	
 		4, 5, 6,
@@ -257,15 +258,36 @@ void Game::CreateGeometry()
 		9, 7, 10,
 		9, 10, 11,
 		11, 10, 12,
-		11, 12, 13,
-		5, 14, 7,
+		11, 12, 13,		
+		5, 14, 7,		// Band
 		5, 15, 14,
-		15, 16, 14,
+		15, 16, 14,		// Top
 		15, 17, 16
 	};
 
+	// It looks decent, but I sort of wish the edges of the band
+	// were sharper. Either make a new mesh to draw over it, or 
+	// maybe add some vertices in between?
 	meshes.push_back(std::make_shared<Mesh>(
-		hatVertices, 18, hatIndices, 48));
+		hatVertices, 18, hatIndices, 48, "Top Hat"));
+
+	// Now for something comparatively simpler: a quadrilateral
+	Vertex quadVertices[] =
+	{
+		{XMFLOAT3(0.35f, -0.25f, 0), black},
+		{XMFLOAT3(0.75f, -0.25f, 0), grey},
+		{XMFLOAT3(0.25f, -0.75f, 0), white},
+		{XMFLOAT3(0.65f, -0.75f, 0), blue},
+	};
+
+	unsigned int quadIndices[] =
+	{
+		0, 1, 2,
+		1, 3, 2,
+	};
+
+	meshes.push_back(std::make_shared<Mesh>(
+		quadVertices, 4, quadIndices, 6, "Quad"));
 }
 
 
@@ -376,9 +398,10 @@ void Game::BuildUI()
 	// Create a new window with the given header
 	ImGui::Begin("Inspector");
 
-	// Create a collapsable header for App Details
-	if (ImGui::CollapsingHeader("App Details"))
+	// Create a collapsible header for App Details
+	if (ImGui::TreeNode("App Details"))
 	{
+		ImGui::Spacing();
 		ImGui::Text("Framerate: %f", ImGui::GetIO().Framerate);
 		ImGui::Text("Frame Time: %fms", 1000 / ImGui::GetIO().Framerate);
 		ImGui::Text("Window Client Size: %dx%d", Window::Width(), Window::Height());
@@ -391,6 +414,28 @@ void Game::BuildUI()
 		{
 			showDemoUI = !showDemoUI;
 		}
+		ImGui::Spacing();
+		ImGui::TreePop();
+	}
+
+	// Create a collapsible header for Mesh Details
+	if (ImGui::TreeNode("Meshes"))
+	{
+		// For every mesh, make a collapsible header
+		for (int i = 0; i < meshes.size(); ++i)
+		{
+			if (ImGui::TreeNode(meshes[i]->GetName()))
+			{
+				ImGui::Spacing();
+				// Get triangle count by dividing index buffer size by 3
+				ImGui::Text("Triangles: %d", (meshes[i]->GetIndexCount() / 3));
+				ImGui::Text("Vertices: %d", meshes[i]->GetVertexCount());
+				ImGui::Text("Indices: %d", meshes[i]->GetIndexCount());
+				ImGui::Spacing();
+				ImGui::TreePop();
+			}
+		}
+		ImGui::TreePop();
 	}
 
 	// Finish creating the ImGui Debug Window

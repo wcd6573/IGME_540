@@ -15,8 +15,10 @@
 // Code mostly copied from Game.cpp starter code (including comments, 
 // so I can continue attempting to understand things).
 // ----------------------------------------------------------------------------
-Mesh::Mesh(Vertex* vertices, UINT _vertexCount, UINT* indices, UINT _indexCount)
+Mesh::Mesh(Vertex* vertices, UINT _vertexCount, UINT* indices, UINT _indexCount,
+	const char* _name)
 {
+	name = _name;
 	vertexCount = _vertexCount;
 	indexCount = _indexCount;
 
@@ -143,6 +145,11 @@ Microsoft::WRL::ComPtr<ID3D11Buffer> Mesh::GetIndexBuffer()
 UINT Mesh::GetIndexCount()
 {
 	return indexCount;
+}
+
+const char* Mesh::GetName()
+{
+	return name;
 }
 
 
