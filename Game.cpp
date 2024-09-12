@@ -1,5 +1,5 @@
 // William Duprey
-// 9/5/24
+// 9/12/24
 // Game Class Implementation
 // Modified from starter code provided by Prof. Chris Cascioli
 
@@ -198,6 +198,7 @@ void Game::CreateGeometry()
 	// - Long story short: Resizing the window also resizes the triangle,
 	//    since we're describing the triangle in terms of the window itself
 
+	// -------------------- TRIANGLE ----------------------
 	// Set up starter triangle vertices and indices
 	Vertex triVertices[] =
 	{
@@ -215,13 +216,20 @@ void Game::CreateGeometry()
 
 	// Add the default starter code triangle
 	meshes.push_back(std::make_shared<Mesh>(
-		triVertices, 3, triIndices, 3, "Starter Triangle"));
+		triVertices, ARRAYSIZE(triVertices), 
+		triIndices, ARRAYSIZE(triIndices), 
+		"Starter Triangle"));
 	
+	// --------------------- TOP HAT ----------------------
+	// Vertices to create a top hat! It took a lot of fiddling
+	// with the index buffer before I really understood what I
+	// was doing, but I'm pretty satisfied with the result.
 	Vertex hatVertices[] =
 	{
 		// Comment coordinates relative to x: 0-12, y: 0-14
 		// (I sketched this out on graph paper and just labeled points
-		// like this as I went)
+		// like this as I went. Would this have been much simpler if
+		// I just used x: 0-10 and y: 0-10? Yes.)
 		// Vertices for the brim:
 		{ XMFLOAT3(+0.0f, 0.25f, +0.0f), grey },	// 0 -- (0, 3)
 		{ XMFLOAT3(0.07f, +.33f, +0.0f), grey },	// 1 -- (1, 4)
@@ -265,12 +273,15 @@ void Game::CreateGeometry()
 		15, 17, 16
 	};
 
-	// It looks decent, but I sort of wish the edges of the band
+	// It looks fine, but I sort of wish the edges of the band
 	// were sharper. Either make a new mesh to draw over it, or 
 	// maybe add some vertices in between?
 	meshes.push_back(std::make_shared<Mesh>(
-		hatVertices, 18, hatIndices, 48, "Top Hat"));
+		hatVertices, ARRAYSIZE(hatVertices), 
+		hatIndices, ARRAYSIZE(hatIndices), 
+		"Top Hat"));
 
+	// ---------------------- QUAD ------------------------
 	// Now for something comparatively simpler: a quadrilateral
 	Vertex quadVertices[] =
 	{
@@ -287,7 +298,9 @@ void Game::CreateGeometry()
 	};
 
 	meshes.push_back(std::make_shared<Mesh>(
-		quadVertices, 4, quadIndices, 6, "Quad"));
+		quadVertices, ARRAYSIZE(quadVertices), 
+		quadIndices, ARRAYSIZE(quadIndices), 
+		"Quad"));
 }
 
 
@@ -424,6 +437,12 @@ void Game::BuildUI()
 		// For every mesh, make a collapsible header
 		for (int i = 0; i < meshes.size(); ++i)
 		{
+			// I wanted to have each treenode be labeled with "Mesh: "
+			// then the mesh name, but only the ImGui::Text uses the
+			// string format specifiers, and I was getting imposter
+			// syndrome trying to concatenate strings in C++ in a way
+			// that made sense, so eventually I just gave up. Now it's
+			// just the name of the mesh.
 			if (ImGui::TreeNode(meshes[i]->GetName()))
 			{
 				ImGui::Spacing();

@@ -1,5 +1,5 @@
 // William Duprey
-// 9/8/24
+// 9/12/24
 // Mesh Class Header
 
 #pragma once
@@ -24,9 +24,8 @@ public:
 		const char* _name);
 	~Mesh();
 
-	// Copy constructor and copy assignment operator (scary)
-	Mesh(const Mesh& other);
-	Mesh& operator=(const Mesh& other);
+	// No copy constructor and copy assignment operator
+	// (scary, and I don't want to deal with them)
 
 	// Getters for the private fields
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetVertexBuffer();

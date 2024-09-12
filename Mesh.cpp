@@ -1,5 +1,5 @@
 // William Duprey
-// 9/8/24
+// 9/12/24
 // Mesh Class Implementation
 
 #include "Mesh.h"
@@ -85,72 +85,24 @@ Mesh::~Mesh()
 {
 }
 
-// --------------------------------------------------------
-// Copy constructor for a Mesh. Hopefully no memory leaks!
-// ComPtrs will ensure that no D3D objects are
-// left floating around in memory (I hope).
-// --------------------------------------------------------
-Mesh::Mesh(const Mesh& other)
-{
-	// Copy over vertex buffer fields
-	vertexBuffer = other.vertexBuffer;
-	vertexCount = other.vertexCount;
-
-	// Copy over index buffer fields
-	indexBuffer = other.indexBuffer;
-	indexCount = other.indexCount;
-}
-
-// --------------------------------------------------------
-// Copy assignment operator for a Mesh.
-// ComPtrs will ensure that no D3D objects are
-// left floating around in memory (I hope).
-// --------------------------------------------------------
-Mesh& Mesh::operator=(const Mesh& other)
-{
-	// Don't let a Mesh copy to itself
-	if (this != &other)
-	{
-		// Copy over vertex buffer fields
-		vertexBuffer = other.vertexBuffer;
-		vertexCount = other.vertexCount;
-
-		// Copy over index buffer fields
-		indexBuffer = other.indexBuffer;
-		indexCount = other.indexCount;
-	}
-
-	return *this;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // ------------------------------- GETTERS --------------------------------- //
 ///////////////////////////////////////////////////////////////////////////////
 Microsoft::WRL::ComPtr<ID3D11Buffer> Mesh::GetVertexBuffer()
-{
-	return vertexBuffer;
-}
+{ return vertexBuffer; }
 
 UINT Mesh::GetVertexCount()
-{
-	return vertexCount;
-}
+{ return vertexCount; }
 
 Microsoft::WRL::ComPtr<ID3D11Buffer> Mesh::GetIndexBuffer()
-{
-	return indexBuffer;
-}
+{ return indexBuffer; }
 
 UINT Mesh::GetIndexCount()
-{
-	return indexCount;
-}
+{ return indexCount; }
 
 const char* Mesh::GetName()
-{
-	return name;
-}
+{ return name; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
