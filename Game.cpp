@@ -100,6 +100,17 @@ void Game::Initialize()
 	bgColor[1] = 0.6f;	// Corn
 	bgColor[2] = 0.75f;	// Flower
 	bgColor[3] = 1.0f;	// Blue
+
+	// Set some initial values for the constant buffer struct
+	colorTint = std::make_shared<float[]>(4);
+	colorTint[0] = 0.5f;
+	colorTint[1] = 0.5f;
+	colorTint[2] = 1.0f;
+	colorTint[3] = 1.0f;
+	offset = std::make_shared<float[]>(3);
+	offset[0] = -0.25f;
+	offset[1] = -0.10f;
+	offset[2] = 0.0f;
 }
 
 
@@ -362,13 +373,17 @@ void Game::Draw(float deltaTime, float totalTime)
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
+	
 	// Set up the VertexShader Data to be mapped for each object
-	// In this case:
-	// - Tint blue
-	// - Move slightly left and down
+	// I feel like there's probably a better way of doing this
 	VertexShaderExternalData vsData;
-	vsData.colorTint = XMFLOAT4(0.5f, 0.5f, 1.0f, 1.0f);
-	vsData.offset = XMFLOAT3(-0.25f, -0.1f, 0.0f);
+	vsData.colorTint.x = colorTint[0];
+	vsData.colorTint.y = colorTint[1];
+	vsData.colorTint.z = colorTint[2];
+	vsData.colorTint.w = colorTint[3];
+	vsData.offset.x = offset[0];
+	vsData.offset.y = offset[1];
+	vsData.offset.z = offset[2];
 
 	// DRAW geometry
 	for (int i = 0; i < meshes.size(); ++i)
@@ -479,13 +494,8 @@ void Game::BuildUI()
 		// For every mesh, make a collapsible header
 		for (int i = 0; i < meshes.size(); ++i)
 		{
-			// I wanted to have each treenode be labeled with "Mesh: "
-			// then the mesh name, but only the ImGui::Text uses the
-			// string format specifiers, and I was getting imposter
-			// syndrome trying to concatenate strings in C++ in a way
-			// that made sense, so eventually I just gave up. Now it's
-			// just the name of the mesh.
-			if (ImGui::TreeNode(meshes[i]->GetName()))
+			// Collapsible header for each mesh
+			if (ImGui::TreeNode("Mesh Node", "Mesh: %s", meshes[i]->GetName()))
 			{
 				ImGui::Spacing();
 				// Get triangle count by dividing index buffer size by 3
@@ -496,6 +506,14 @@ void Game::BuildUI()
 				ImGui::TreePop();
 			}
 		}
+		ImGui::TreePop();
+	}
+
+	// Create a collapsible header for controller the Vertex shader
+	if (ImGui::TreeNode("Vertex Shader External Data"))
+	{
+		ImGui::SliderFloat3("Offset", offset.get(), -1, 1);
+		ImGui::ColorEdit4("Tint", colorTint.get());
 		ImGui::TreePop();
 	}
 

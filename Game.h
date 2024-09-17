@@ -43,6 +43,10 @@ private:
 	// 4-element array of floats for holding the background color
 	std::shared_ptr<float[]> bgColor;
 
+	// Variables used to change the constant buffer struct using ImGui
+	std::shared_ptr<float[]> offset;
+	std::shared_ptr<float[]> colorTint;
+
 	// Vector used to hold all of the meshes used by Game
 	std::vector<std::shared_ptr<Mesh>> meshes;
 
