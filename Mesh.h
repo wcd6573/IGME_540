@@ -19,7 +19,7 @@ class Mesh
 {
 public:
 	// Underscores used for potentially ambiguous param names
-	Mesh(Vertex* vertices, UINT _vertexCount, 
+	Mesh(Vertex* vertices, UINT _vertexCount,
 		UINT* indices, UINT _indexCount,
 		const char* _name);
 	~Mesh();
@@ -35,7 +35,7 @@ public:
 	const char* GetName();
 
 	// Sets buffers and draws the mesh to the screen
-	void Draw(float deltaTime, float totalTime);
+	void Draw();
 
 private:
 	// Vertices of the triangles making up the mesh

@@ -9,6 +9,7 @@
 #include "Input.h"
 #include "PathHelpers.h"
 #include "Window.h"
+#include "BufferStructs.h"
 
 #include <DirectXMath.h>
 
@@ -49,6 +50,25 @@ void Game::Initialize()
 	//  - You'll be expanding and/or replacing these later
 	LoadShaders();
 	CreateGeometry();
+
+	// Initialize the constant buffer for the vertex shader
+	{
+		// Set up the constant buffer description
+		D3D11_BUFFER_DESC cbDesc = {};
+		cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		// Size must be a multiple of 16, use math to ensure that
+		cbDesc.ByteWidth = (sizeof(VertexShaderExternalData) + 15) / 16 * 16;
+		cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+
+		// Actually create the buffer, sets the ComPtr
+		Graphics::Device->CreateBuffer(
+			&cbDesc, 0, vsConstBuffer.GetAddressOf());
+
+		// Bind the buffer to the pipeline
+		Graphics::Context->VSSetConstantBuffers(
+			0, 1, vsConstBuffer.GetAddressOf());
+	}
 
 	// Set initial graphics API state
 	//  - These settings persist until we change them
@@ -216,10 +236,10 @@ void Game::CreateGeometry()
 
 	// Add the default starter code triangle
 	meshes.push_back(std::make_shared<Mesh>(
-		triVertices, ARRAYSIZE(triVertices), 
-		triIndices, ARRAYSIZE(triIndices), 
+		triVertices, ARRAYSIZE(triVertices),
+		triIndices, ARRAYSIZE(triIndices),
 		"Starter Triangle"));
-	
+
 	// --------------------- TOP HAT ----------------------
 	// Vertices to create a top hat! It took a lot of fiddling
 	// with the index buffer before I really understood what I
@@ -254,11 +274,11 @@ void Game::CreateGeometry()
 	};
 
 	// Vertices must be clockwise for triangle to face correctly
-	unsigned int hatIndices[] = { 
+	unsigned int hatIndices[] = {
 		0, 1, 2,		// Brim
-		2, 1, 3,	
+		2, 1, 3,
 		2, 3, 4,
-		4, 3, 5,	
+		4, 3, 5,
 		4, 5, 6,
 		6, 5, 7,
 		6, 7, 8,
@@ -266,7 +286,7 @@ void Game::CreateGeometry()
 		9, 7, 10,
 		9, 10, 11,
 		11, 10, 12,
-		11, 12, 13,		
+		11, 12, 13,
 		5, 14, 7,		// Band
 		5, 15, 14,
 		15, 16, 14,		// Top
@@ -277,8 +297,8 @@ void Game::CreateGeometry()
 	// were sharper. Either make a new mesh to draw over it, or 
 	// maybe add some vertices in between?
 	meshes.push_back(std::make_shared<Mesh>(
-		hatVertices, ARRAYSIZE(hatVertices), 
-		hatIndices, ARRAYSIZE(hatIndices), 
+		hatVertices, ARRAYSIZE(hatVertices),
+		hatIndices, ARRAYSIZE(hatIndices),
 		"Top Hat"));
 
 	// ---------------------- QUAD ------------------------
@@ -298,8 +318,8 @@ void Game::CreateGeometry()
 	};
 
 	meshes.push_back(std::make_shared<Mesh>(
-		quadVertices, ARRAYSIZE(quadVertices), 
-		quadIndices, ARRAYSIZE(quadIndices), 
+		quadVertices, ARRAYSIZE(quadVertices),
+		quadIndices, ARRAYSIZE(quadIndices),
 		"Quad"));
 }
 
@@ -338,14 +358,36 @@ void Game::Draw(float deltaTime, float totalTime)
 	// - At the beginning of Game::Draw() before drawing *anything*
 	{
 		// Clear the back buffer (erase what's on screen) and depth buffer
-		Graphics::Context->ClearRenderTargetView(Graphics::BackBufferRTV.Get(),	bgColor.get());
+		Graphics::Context->ClearRenderTargetView(Graphics::BackBufferRTV.Get(), bgColor.get());
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
+	// Set up the VertexShader Data to be mapped for each object
+	// In this case:
+	// - Tint blue
+	// - Move slightly left and down
+	VertexShaderExternalData vsData;
+	vsData.colorTint = XMFLOAT4(0.5f, 0.5f, 1.0f, 1.0f);
+	vsData.offset = XMFLOAT3(-0.25f, -0.1f, 0.0f);
+
 	// DRAW geometry
-	for (int i = 0; i < meshes.size(); ++i) 
+	for (int i = 0; i < meshes.size(); ++i)
 	{
-		meshes[i]->Draw(deltaTime, totalTime);
+		// Copy data to the GPU for each object drawn
+		// (this code copied from the reading)
+		D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
+		Graphics::Context->Map(
+			vsConstBuffer.Get(), 0,
+			D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
+
+		// Brutally efficient copy data to GPU
+		memcpy(mappedBuffer.pData, &vsData, sizeof(vsData));
+
+		// Stop using the constant buffer
+		Graphics::Context->Unmap(vsConstBuffer.Get(), 0);
+
+		// Finally, draw the mesh
+		meshes[i]->Draw();
 	}
 
 	// Frame END

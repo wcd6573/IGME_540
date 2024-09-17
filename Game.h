@@ -36,7 +36,7 @@ private:
 	// ImGui helper methods
 	void NewFrameUI(float deltaTime);
 	void BuildUI();
-	
+
 	// Whether the ImGui default demo window is displayed
 	bool showDemoUI;
 
@@ -55,5 +55,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+
+	// Constant buffer used for the Vertex Shader
+	Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstBuffer;
 };
 

@@ -90,19 +90,29 @@ Mesh::~Mesh()
 // ------------------------------- GETTERS --------------------------------- //
 ///////////////////////////////////////////////////////////////////////////////
 Microsoft::WRL::ComPtr<ID3D11Buffer> Mesh::GetVertexBuffer()
-{ return vertexBuffer; }
+{
+	return vertexBuffer;
+}
 
 UINT Mesh::GetVertexCount()
-{ return vertexCount; }
+{
+	return vertexCount;
+}
 
 Microsoft::WRL::ComPtr<ID3D11Buffer> Mesh::GetIndexBuffer()
-{ return indexBuffer; }
+{
+	return indexBuffer;
+}
 
 UINT Mesh::GetIndexCount()
-{ return indexCount; }
+{
+	return indexCount;
+}
 
 const char* Mesh::GetName()
-{ return name; }
+{
+	return name;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -112,14 +122,10 @@ const char* Mesh::GetName()
 // Sets up vertex and index buffers for the input assembler,
 // then draws the indexed vertices.
 // 
-// Game::Draw has these parameters, which I don't
-// think are used anywhere, but I have them here too,
-// in case they're ever needed.
-// 
 // Code mostly copied from the Game::Draw() starter code,
 // including comments, so I can continue to understand.
 // --------------------------------------------------------
-void Mesh::Draw(float deltaTime, float totalTime)
+void Mesh::Draw()
 {
 	// DRAW geometry
 	// - These steps are generally repeated for EACH object you draw
