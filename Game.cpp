@@ -1,5 +1,5 @@
 // William Duprey
-// 9/12/24
+// 9/24/24
 // Game Class Implementation
 // Modified from starter code provided by Prof. Chris Cascioli
 
@@ -381,9 +381,11 @@ void Game::Draw(float deltaTime, float totalTime)
 	vsData.colorTint.y = colorTint[1];
 	vsData.colorTint.z = colorTint[2];
 	vsData.colorTint.w = colorTint[3];
-	vsData.offset.x = offset[0];
-	vsData.offset.y = offset[1];
-	vsData.offset.z = offset[2];
+	vsData.world = XMFLOAT4X4(
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		offset[0], offset[1], offset[2], 1);
 
 	// DRAW geometry
 	for (int i = 0; i < meshes.size(); ++i)

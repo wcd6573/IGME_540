@@ -1,6 +1,6 @@
 /*
 William Duprey
-9/17/24
+9/24/24
 Vertex Shader 
 Modified from starter code provided by Prof. Chris Cascioli
 */
@@ -10,7 +10,7 @@ Modified from starter code provided by Prof. Chris Cascioli
 cbuffer ExternalData : register(b0)
 {
     float4 colorTint;
-    float3 offset;
+    matrix world;
 }
 
 
@@ -66,8 +66,8 @@ VertexToPixel main(VertexShaderInput input)
 	// - Each of these components is then automatically divided by the W component, 
 	//   which we're leaving at 1.0 for now (this is more useful when dealing with 
 	//   a perspective projection matrix, which we'll get to in the future).
-	// - Offset by the cbuffer's offset value
-    output.screenPosition = float4(input.localPosition + offset, 1.0f);
+	// - Offset using the cbuffer's world matrix
+    output.screenPosition = mul(world, float4(input.localPosition, 1.0f));
 
 	// Pass the color through 
 	// - The values will be interpolated per-pixel by the rasterizer

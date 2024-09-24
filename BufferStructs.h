@@ -1,6 +1,6 @@
 /*
 William Duprey
-9/17/24
+9/24/24
 BufferStructs Header
 */
 
@@ -14,6 +14,6 @@ The vertex shader has a cbuffer that matches this struct.
 struct VertexShaderExternalData
 {
 	DirectX::XMFLOAT4 colorTint;
-	DirectX::XMFLOAT3 offset;
+	DirectX::XMFLOAT4X4 world;
 };
 
