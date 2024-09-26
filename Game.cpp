@@ -343,7 +343,16 @@ void Game::CreateGeometry()
 	std::shared_ptr<GameEntity> tri1 = std::make_shared<GameEntity>(meshes[0]);
 
 	// Alter positions so that they're not all on top of each other
+	hat1.get()->GetTransform()->MoveAbsolute(0.5f, 0.5f, 0);
+	
+	hat2.get()->GetTransform()->MoveAbsolute(0.75f, -0.75f, 0);
+	hat2.get()->GetTransform()->Scale(0.1f, 0.1f, 0);
+	
+	hat3.get()->GetTransform()->MoveAbsolute(-0.5f, 0, 0);
+	hat3.get()->GetTransform()->Scale(0.5f, 1.5f, 0);
+	hat3.get()->GetTransform()->Rotate(0, 0, XM_PI);
 
+	quad1.get()->GetTransform()->MoveAbsolute(0.1f, -0.65f, 0);
 
 	// Add all entities to the vector
 	entities.push_back(hat1);
@@ -371,6 +380,28 @@ void Game::Update(float deltaTime, float totalTime)
 	// Update ImGui at the start of the frame so it has fresh data
 	NewFrameUI(deltaTime);
 	BuildUI();
+
+	// --- Move game entities ---
+	// Scale calculation taken from Demo code
+	float scale = (float)sin(totalTime * 5) * 0.5f + 1.0f;
+	
+	// Make this hat move like a jellyfish
+	entities[2].get()->GetTransform()->SetScale(1.5f-scale, scale, 1);
+	entities[2].get()->GetTransform()->
+		SetPosition(-0.5f, (float)sin(totalTime) * 0.5f, 0);
+
+	// Big hat rotates counterclockwise, small hat rotates clockwise
+	entities[0].get()->GetTransform()->Rotate(0, 0, deltaTime);
+	entities[1].get()->GetTransform()->Rotate(0, 0, -deltaTime);
+
+	// Small hat orbits around (0.5f, -0.5f)
+	entities[1].get()->GetTransform()->SetPosition(
+		0.5f + (float)cos(totalTime) * 0.1f,
+		-0.5f + (float)sin(totalTime) * 0.1f, 0);
+
+	// Quad and Tri each just move along the x and y axes respectively
+	entities[3].get()->GetTransform()->SetPosition((float)sin(totalTime), 0, 0);
+	entities[4].get()->GetTransform()->SetPosition(0, (float)sin(totalTime), 0);
 
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::KeyDown(VK_ESCAPE))
