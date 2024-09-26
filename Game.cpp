@@ -404,7 +404,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		Graphics::Context->Unmap(vsConstBuffer.Get(), 0);
 
 		// Finally, draw the mesh
-		meshes[i]->Draw();
+		meshes[i]->SetBuffersAndDraw();
 	}
 
 	// Frame END

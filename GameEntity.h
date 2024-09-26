@@ -5,10 +5,12 @@ GameEntity Header
 */
 
 #pragma once
+#include <wrl/client.h>
+#include <DirectXMath.h>
 #include <memory>
 
-#include "Transform.h"
 #include "Mesh.h"
+#include "Transform.h"
 
 // --------------------------------------------------------
 // A class representing an entity in a game. 
@@ -20,9 +22,12 @@ class GameEntity
 public:
 	GameEntity(std::shared_ptr<Mesh> _mesh);
 
+	// No destructor since it would be really bad if
+	// an entity destroyed a Mesh it was sharing
+
 	Transform& GetTransform();
 	std::shared_ptr<Mesh> GetMesh();
-	void Draw();
+	void Draw(Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstBuffer);
 
 private:
 	Transform transform;

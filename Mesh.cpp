@@ -125,7 +125,7 @@ const char* Mesh::GetName()
 // Code mostly copied from the Game::Draw() starter code,
 // including comments, so I can continue to understand.
 // --------------------------------------------------------
-void Mesh::Draw()
+void Mesh::SetBuffersAndDraw()
 {
 	// DRAW geometry
 	// - These steps are generally repeated for EACH object you draw

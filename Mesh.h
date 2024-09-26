@@ -35,7 +35,7 @@ public:
 	const char* GetName();
 
 	// Sets buffers and draws the mesh to the screen
-	void Draw();
+	void SetBuffersAndDraw();
 
 private:
 	// Vertices of the triangles making up the mesh
