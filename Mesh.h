@@ -19,8 +19,8 @@ class Mesh
 {
 public:
 	// Underscores used for potentially ambiguous param names
-	Mesh(Vertex* vertices, UINT _vertexCount,
-		UINT* indices, UINT _indexCount,
+	Mesh(Vertex* vertices, size_t _vertexCount,
+		UINT* indices, size_t _indexCount,
 		const char* _name);
 	~Mesh();
 

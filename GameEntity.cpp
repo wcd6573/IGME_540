@@ -19,12 +19,12 @@ GameEntity::GameEntity(std::shared_ptr<Mesh> _mesh)
 }
 
 // --------------------------------------------------------
-// Returns a reference to the entity's Transform, allowing
+// Returns a pointer to the entity's Transform, allowing
 // it to be modified by code outside of this class.
 // --------------------------------------------------------
-Transform& GameEntity::GetTransform()
+Transform* GameEntity::GetTransform()
 {
-	return transform;
+	return &transform;
 }
 
 // --------------------------------------------------------
@@ -43,18 +43,18 @@ std::shared_ptr<Mesh> GameEntity::GetMesh()
 // --------------------------------------------------------
 void GameEntity::Draw(Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstBuffer)
 {
-	// Bind constant buffer
-	D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
-	Graphics::Context->Map(
-		vsConstBuffer.Get(), 0,
-		D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
-
 	// Create the struct to send data to the vertex shader:
 	//	- Get the world matrix from the transform, 
 	//	- and just tint blue by default
 	VertexShaderExternalData vsData;
 	vsData.world = transform.GetWorldMatrix();
 	vsData.colorTint = XMFLOAT4(0.5f, 0.5f, 1.0f, 1.0f);
+
+	// Bind constant buffer
+	D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
+	Graphics::Context->Map(
+		vsConstBuffer.Get(), 0,
+		D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
 
 	// Brutally efficient copy data to GPU
 	memcpy(mappedBuffer.pData, &vsData, sizeof(vsData));

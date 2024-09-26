@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "Mesh.h"
+#include "GameEntity.h"
 
 class Game
 {
@@ -49,6 +50,7 @@ private:
 
 	// Vector used to hold all of the meshes used by Game
 	std::vector<std::shared_ptr<Mesh>> meshes;
+	std::vector<GameEntity> entities;
 
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the

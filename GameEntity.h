@@ -25,7 +25,7 @@ public:
 	// No destructor since it would be really bad if
 	// an entity destroyed a Mesh it was sharing
 
-	Transform& GetTransform();
+	Transform* GetTransform();
 	std::shared_ptr<Mesh> GetMesh();
 	void Draw(Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstBuffer);
 

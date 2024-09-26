@@ -15,12 +15,14 @@
 // Code mostly copied from Game.cpp starter code (including comments, 
 // so I can continue attempting to understand things).
 // ----------------------------------------------------------------------------
-Mesh::Mesh(Vertex* vertices, UINT _vertexCount, UINT* indices, UINT _indexCount,
+Mesh::Mesh(Vertex* vertices, size_t _vertexCount, UINT* indices, size_t _indexCount,
 	const char* _name)
 {
 	name = _name;
-	vertexCount = _vertexCount;
-	indexCount = _indexCount;
+
+	// Explicit cast to UINT to avoid warnings
+	vertexCount = (UINT)_vertexCount;
+	indexCount = (UINT)_indexCount;
 
 	// Create a VERTEX BUFFER
 	// - This holds the vertex data of triangles for a single object
