@@ -233,9 +233,9 @@ void Game::CreateGeometry()
 	// Set up starter triangle vertices and indices
 	Vertex triVertices[] =
 	{
-		{ XMFLOAT3(-0.25f, +0.25f, +0.0f), red },
-		{ XMFLOAT3(+0.00f, -0.5f, +0.0f), blue },
-		{ XMFLOAT3(-0.5f, -0.5f, +0.0f), green },
+		{ XMFLOAT3(+0.0f, +0.25f, +0.0f), red },
+		{ XMFLOAT3(+.25f, -0.25f, +0.0f), blue },
+		{ XMFLOAT3(-0.25f, -0.25f, +0.0f), green },
 	};
 
 	// Set up indices, which tell us which vertices to use and in which order
@@ -262,26 +262,26 @@ void Game::CreateGeometry()
 		// like this as I went. Would this have been much simpler if
 		// I just used x: 0-10 and y: 0-10? Yes.)
 		// Vertices for the brim:
-		{ XMFLOAT3(+0.0f, 0.25f, +0.0f), grey },	// 0 -- (0, 3)
-		{ XMFLOAT3(0.07f, +.33f, +0.0f), grey },	// 1 -- (1, 4)
-		{ XMFLOAT3(0.07f, +.17f, +0.0f), grey },	// 2 -- (1, 2)
-		{ XMFLOAT3(0.14f, 0.25f, +0.0f), grey },	// 3 -- (2, 3)
-		{ XMFLOAT3(0.21f, 0.08f, +0.0f), grey },	// 4 -- (3, 1)
-		{ XMFLOAT3(.286f, +.17f, +0.0f), darkGrey },// 5 -- (4, 2)
-		{ XMFLOAT3(.429f, +0.0f, +0.0f), grey },	// 6 -- (6, 0)
-		{ XMFLOAT3(.714f, +.17f, +0.0f), darkGrey },// 7 -- (10, 2)
-		{ XMFLOAT3(.571f, +0.0f, +0.0f), grey },	// 8 -- (8, 0)
-		{ XMFLOAT3(.786f, +.08f, +0.0f), grey },	// 9 -- (11, 1)
-		{ XMFLOAT3(.857f, +.25f, +0.0f), grey },	// 10 - (12, 3)
-		{ XMFLOAT3(.929f, +.17f, +0.0f), grey },	// 11 - (13, 2)
-		{ XMFLOAT3(.929f, +.33f, +0.0f), grey },	// 12 - (13, 4)
-		{ XMFLOAT3(+1.0f, +.25f, +0.0f), grey },	// 13 - (14, 3)
+		{ XMFLOAT3(-0.5f, -.25f, +0.0f), grey },	// 0 -- (0, 3)
+		{ XMFLOAT3(-.43f, -.17f, +0.0f), grey },	// 1 -- (1, 4)
+		{ XMFLOAT3(-.43f, -.33f, +0.0f), grey },	// 2 -- (1, 2)
+		{ XMFLOAT3(-.36f, -.25f, +0.0f), grey },	// 3 -- (2, 3)
+		{ XMFLOAT3(-.29f, -.42f, +0.0f), grey },	// 4 -- (3, 1)
+		{ XMFLOAT3(-.214f, -.33f, +0.0f), darkGrey },// 5 -- (4, 2)
+		{ XMFLOAT3(-.071f, -0.5f, +0.0f), grey },	// 6 -- (6, 0)
+		{ XMFLOAT3(.214f, -.33f, +0.0f), darkGrey },// 7 -- (10, 2)
+		{ XMFLOAT3(.071f, -0.5f, +0.0f), grey },	// 8 -- (8, 0)
+		{ XMFLOAT3(.286f, -.42f, +0.0f), grey },	// 9 -- (11, 1)
+		{ XMFLOAT3(.357f, -.25f, +0.0f), grey },	// 10 - (12, 3)
+		{ XMFLOAT3(.429f, -.33f, +0.0f), grey },	// 11 - (13, 2)
+		{ XMFLOAT3(.429f, -.17f, +0.0f), grey },	// 12 - (13, 4)
+		{ XMFLOAT3(+0.5f, -.25f, +0.0f), grey },	// 13 - (14, 3)
 		// Vertices for the band:							
-		{ XMFLOAT3(.786f, .417f, +0.0f), darkGrey },// 14 - (11, 5)
-		{ XMFLOAT3(.214f, .417f, +0.0f), darkGrey },// 15 - (3, 5)
+		{ XMFLOAT3(.286f, -.083, +0.0f), darkGrey },// 14 - (11, 5)
+		{ XMFLOAT3(-.286f, -.083f, +0.0f), darkGrey },// 15 - (3, 5)
 		// Vertices for the top:							
-		{ XMFLOAT3(.929f, +1.0f, +0.0f), grey },	// 16 - (13, 12)
-		{ XMFLOAT3(+.07f, +1.0f, +0.0f), grey },	// 17 - (1, 12)
+		{ XMFLOAT3(.429f, +0.5f, +0.0f), grey },	// 16 - (13, 12)
+		{ XMFLOAT3(-.43f, +0.5f, +0.0f), grey },	// 17 - (1, 12)
 	};
 
 	// Vertices must be clockwise for triangle to face correctly
@@ -316,10 +316,10 @@ void Game::CreateGeometry()
 	// Now for something comparatively simpler: a quadrilateral
 	Vertex quadVertices[] =
 	{
-		{XMFLOAT3(0.35f, -0.25f, 0), black},
-		{XMFLOAT3(0.75f, -0.25f, 0), grey},
-		{XMFLOAT3(0.25f, -0.75f, 0), white},
-		{XMFLOAT3(0.65f, -0.75f, 0), blue},
+		{XMFLOAT3(-.15f, +0.25f, 0), black},
+		{XMFLOAT3(0.25f, +0.25f, 0), grey},
+		{XMFLOAT3(-.25f, -0.25f, 0), white},
+		{XMFLOAT3(0.15f, -0.25f, 0), blue},
 	};
 
 	unsigned int quadIndices[] =
@@ -332,6 +332,25 @@ void Game::CreateGeometry()
 		quadVertices, ARRAYSIZE(quadVertices),
 		quadIndices, ARRAYSIZE(quadIndices),
 		"Quad"));
+
+
+	// --------------- MAKE SOME ENTITIES -----------------
+	// Create shared pointers using the above meshes
+	std::shared_ptr<GameEntity> hat1 = std::make_shared<GameEntity>(meshes[1]);
+	std::shared_ptr<GameEntity> hat2 = std::make_shared<GameEntity>(meshes[1]);
+	std::shared_ptr<GameEntity> hat3 = std::make_shared<GameEntity>(meshes[1]);
+	std::shared_ptr<GameEntity> quad1 = std::make_shared<GameEntity>(meshes[2]);
+	std::shared_ptr<GameEntity> tri1 = std::make_shared<GameEntity>(meshes[0]);
+
+	// Alter positions so that they're not all on top of each other
+
+
+	// Add all entities to the vector
+	entities.push_back(hat1);
+	entities.push_back(hat2);
+	entities.push_back(hat3);
+	entities.push_back(quad1);
+	entities.push_back(tri1);
 }
 
 
@@ -373,38 +392,10 @@ void Game::Draw(float deltaTime, float totalTime)
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
-	
-	// Set up the VertexShader Data to be mapped for each object
-	// I feel like there's probably a better way of doing this
-	VertexShaderExternalData vsData;
-	vsData.colorTint.x = colorTint[0];
-	vsData.colorTint.y = colorTint[1];
-	vsData.colorTint.z = colorTint[2];
-	vsData.colorTint.w = colorTint[3];
-	vsData.world = XMFLOAT4X4(
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		offset[0], offset[1], offset[2], 1);
-
-	// DRAW geometry
-	for (int i = 0; i < meshes.size(); ++i)
+	// DRAW entities
+	for (int i = 0; i < entities.size(); ++i)
 	{
-		// Copy data to the GPU for each object drawn
-		// (this code copied from the reading)
-		D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
-		Graphics::Context->Map(
-			vsConstBuffer.Get(), 0,
-			D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
-
-		// Brutally efficient copy data to GPU
-		memcpy(mappedBuffer.pData, &vsData, sizeof(vsData));
-
-		// Stop using the constant buffer
-		Graphics::Context->Unmap(vsConstBuffer.Get(), 0);
-
-		// Finally, draw the mesh
-		meshes[i]->SetBuffersAndDraw();
+		entities[i].get()->Draw(vsConstBuffer);
 	}
 
 	// Frame END

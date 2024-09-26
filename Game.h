@@ -48,9 +48,9 @@ private:
 	std::shared_ptr<float[]> offset;
 	std::shared_ptr<float[]> colorTint;
 
-	// Vector used to hold all of the meshes used by Game
+	// Vector fields to easily loop through these elements
 	std::vector<std::shared_ptr<Mesh>> meshes;
-	std::vector<GameEntity> entities;
+	std::vector<std::shared_ptr<GameEntity>> entities;
 
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
