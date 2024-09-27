@@ -277,7 +277,7 @@ void Game::CreateGeometry()
 		{ XMFLOAT3(.429f, -.17f, +0.0f), grey },	// 12 - (13, 4)
 		{ XMFLOAT3(+0.5f, -.25f, +0.0f), grey },	// 13 - (14, 3)
 		// Vertices for the band:							
-		{ XMFLOAT3(.286f, -.083, +0.0f), darkGrey },// 14 - (11, 5)
+		{ XMFLOAT3(.286f, -.083f, +0.0f), darkGrey },// 14 - (11, 5)
 		{ XMFLOAT3(-.286f, -.083f, +0.0f), darkGrey },// 15 - (3, 5)
 		// Vertices for the top:							
 		{ XMFLOAT3(.429f, +0.5f, +0.0f), grey },	// 16 - (13, 12)
