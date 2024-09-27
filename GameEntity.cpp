@@ -32,7 +32,7 @@ Transform* GameEntity::GetTransform()
 // --------------------------------------------------------
 std::shared_ptr<Mesh> GameEntity::GetMesh()
 {
-	return std::shared_ptr<Mesh>();
+	return mesh;
 }
 
 // --------------------------------------------------------

@@ -518,6 +518,7 @@ void Game::BuildUI()
 		// For every mesh, make a collapsible header
 		for (int i = 0; i < meshes.size(); ++i)
 		{
+			ImGui::PushID(meshes[i].get());
 			// Collapsible header for each mesh
 			if (ImGui::TreeNode("Mesh Node", "Mesh: %s", meshes[i]->GetName()))
 			{
@@ -529,15 +530,50 @@ void Game::BuildUI()
 				ImGui::Spacing();
 				ImGui::TreePop();
 			}
+			ImGui::PopID();
 		}
 		ImGui::TreePop();
 	}
 
-	// Create a collapsible header for controller the Vertex shader
-	if (ImGui::TreeNode("Vertex Shader External Data"))
+	// Create a collapsible header for the Game Entities
+	if (ImGui::TreeNode("Game Entities"))
 	{
-		ImGui::SliderFloat3("Offset", offset.get(), -1, 1);
-		ImGui::ColorEdit4("Tint", colorTint.get());
+		// For every entity, make a collapsible header
+		for (int i = 0; i < entities.size(); ++i) 
+		{
+			// Push current ID so that multiple entities
+			// can have the same labels
+			ImGui::PushID(entities[i].get());
+			if (ImGui::TreeNode("Entity Node", "Entity %d", i))
+			{
+				// Info for the entity's mesh
+				ImGui::Text("Mesh: %s",
+					entities[i].get()->GetMesh().get()->GetName());
+				ImGui::Spacing();
+
+				// Get pointer to transform and each field of it
+				Transform* trans = entities[i].get()->GetTransform();
+				XMFLOAT3 pos = trans->GetPosition();
+				XMFLOAT3 rot = trans->GetRotation();
+				XMFLOAT3 sca = trans->GetScale();
+
+				// Update the corresponding field of the transform
+				// if it is changed in the UI
+				if (ImGui::DragFloat3("Position", &pos.x, 0.01f)) {
+					trans->SetPosition(pos);
+				}
+				if (ImGui::DragFloat3("Rotation", &rot.x, 0.01f)) {
+					trans->SetRotation(rot);
+				}
+				if (ImGui::DragFloat3("Scale", &sca.x, 0.01f)) {
+					trans->SetScale(sca);
+				}
+
+				ImGui::Spacing();
+				ImGui::TreePop();
+			}
+			ImGui::PopID();
+		}
 		ImGui::TreePop();
 	}
 
