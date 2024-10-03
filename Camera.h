@@ -24,13 +24,16 @@ public:
 		float _fov = 60.0f,			// Give default values
 		float _nearClip = 0.01f,	// for some fields 
 		float _farClip = 100.0f,
-		bool _doPerspective = true);
+		bool _doPerspective = true,
+		float _orthoWidth = 10.0f,
+		float _moveSpeed = 10.0f,
+		float _lookSpeed = 2.0f);
 	~Camera();
 
 	// Update methods
 	void Update(float dt);
 	void UpdateViewMatrix();
-	void UpdateProjectionMatrix(float aspectRatio);
+	void UpdateProjectionMatrix(float _aspectRatio);
 
 	// Getters
 	DirectX::XMFLOAT4X4 GetViewMatrix();
@@ -66,4 +69,5 @@ private:
 	float moveSpeed;	// How fast you move around
 	float lookSpeed;	// How fast you can rotate the camera
 	bool doPerspective;	// perspective, or orthographic projection
+	float orthoWidth;	// Width of orthographic view
 };
