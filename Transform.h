@@ -1,6 +1,6 @@
 /*
 William Duprey
-9/25/24
+10/3/24
 Transform Class Header
 */
 
@@ -23,6 +23,9 @@ public:
 	DirectX::XMFLOAT3 GetScale();
 	DirectX::XMFLOAT4X4 GetWorldMatrix();
 	DirectX::XMFLOAT4X4 GetWorldInverseTransposeMatrix();
+	DirectX::XMFLOAT3 GetRight();
+	DirectX::XMFLOAT3 GetUp();
+	DirectX::XMFLOAT3 GetForward();
 	
 	// Setters
 	void SetPosition(float x, float y, float z);
@@ -42,6 +45,10 @@ public:
 	void Scale(float x, float y, float z);
 	void Scale(DirectX::XMFLOAT3 _scale);
 
+	// Helpers
+	void UpdateWorld();
+	void UpdateDirections();
+
 private:
 	// Vectors used to construct the world matrix
 	DirectX::XMFLOAT3 position;	
@@ -53,7 +60,15 @@ private:
 	DirectX::XMFLOAT4X4 worldMatrix;
 	DirectX::XMFLOAT4X4 worldInverseTransposeMatrix;
 	
+	// Vector directions for the relative axes of the transform
+	DirectX::XMFLOAT3 right;
+	DirectX::XMFLOAT3 up;
+	DirectX::XMFLOAT3 forward;
+
 	// Whether the world matrix needs to be recalculated
 	bool dirtyWorld;
+
+	// Whether forward, up, and right need to be recalculated
+	bool dirtyDirections;
 };
 
