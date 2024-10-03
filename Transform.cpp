@@ -142,6 +142,36 @@ void Transform::MoveAbsolute(XMFLOAT3 offset)
     dirtyWorld = true;
 }
 
+// --------------------------------------------------------
+// Moves relative to the transform's current rotation,
+// which may not line up with the world axes.
+// --------------------------------------------------------
+void Transform::MoveRelative(float x, float y, float z)
+{
+    // Store the relative movement in an XMVECTOR
+    // so we can do math with it
+    XMVECTOR move = XMVectorSet(x, y, z, 0);
+
+    // Store quaternion of the rotation using this
+    // amazingly descriptive function name
+    XMVECTOR rotQuat = XMQuaternionRotationRollPitchYawFromVector(
+        XMLoadFloat3(&rotation));
+    
+    // Rotate movement by the rotation to get the direction
+    // that the transform should actually move
+    XMVECTOR dir = XMVector3Rotate(move, rotQuat);
+
+    // Make an XMVECTOR of the position, add to it,
+    // then store the result back in the position
+    XMStoreFloat3(&position, XMLoadFloat3(&position) + dir);
+}
+
+void Transform::MoveRelative(XMFLOAT3 offset)
+{
+    // Don't repeat code, just call the overload
+    MoveRelative(offset.x, offset.y, offset.z);
+}
+
 void Transform::Rotate(float pitch, float yaw, float roll)
 {
     rotation.x += pitch;
