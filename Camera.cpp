@@ -43,9 +43,71 @@ Camera::~Camera() { }
 ///////////////////////////////////////////////////////////////////////////////
 // ------------------------------- UPDATE ---------------------------------- //
 ///////////////////////////////////////////////////////////////////////////////
+// --------------------------------------------------------
+// Handles user input to move and rotate the camera.
+// Updates the view matrix once any transformations happem.
+// --------------------------------------------------------
 void Camera::Update(float dt)
 {
+    // ----- Camera Position -----
+    // Store movement so that there's 
+    // only one call to MoveRelative for X and Z,
+    // then one call to MoveAbsolute for Y
+    XMFLOAT3 moveRel = XMFLOAT3(0, 0, 0);
+    float moveAbs = 0.0f;
+    
+    // Speed modifier using the shift and control keys
+    float speedMod = 1.0f;
+    if (Input::KeyDown(VK_SHIFT)) { speedMod *= 2.0f; }
+    if (Input::KeyDown(VK_CONTROL)) { speedMod /= 2.0f; }
 
+    // No sense in redoing this calculation for each key
+    float speed = moveSpeed * speedMod * dt;
+
+    // Z-axis
+    if (Input::KeyDown('W')) { moveRel.z += speed; }
+    if (Input::KeyDown('S')) { moveRel.z += -speed; }
+    // X-axis
+    if (Input::KeyDown('D')) { moveRel.x += speed; }
+    if (Input::KeyDown('A')) { moveRel.x += -speed; }
+    // Y-axis
+    if (Input::KeyDown(VK_SPACE)) { moveAbs += speed; }
+    if (Input::KeyDown('X')) { moveAbs += -speed; }
+
+    // Reposition the camera based on the user's input
+    transform->MoveRelative(moveRel);
+    transform->MoveAbsolute(0, moveAbs, 0);
+
+    // ----- Camera Rotation -----
+    // Only rotate the camera if the user clicks
+    if (Input::MouseLeftDown())
+    {
+        // Store the amounts the mouse was moved since last frame
+        float mouseX = Input::GetMouseXDelta() * lookSpeed;
+        float mouseY = Input::GetMouseYDelta() * lookSpeed;
+
+        // Rotate, mouseY = pitch, mouseX = yaw
+        transform->Rotate(mouseY, mouseX, 0);
+
+        // Clamp the yaw values to Pi / 2 and -Pi / 2
+        // (There's probably a way to do this that doesn't
+        // involve making a second call to the transform)
+        XMFLOAT3 rotate = transform->GetRotation();
+        float yaw = rotate.y;
+        if (yaw < -DirectX::XM_PIDIV2)
+        {
+            rotate.y = -DirectX::XM_PIDIV2;
+        }
+        else if (yaw > DirectX::XM_PIDIV2)
+        {
+            rotate.y = DirectX::XM_PIDIV2;
+        }
+        transform->SetRotation(rotate);
+    }
+
+    // Update the view matrix last so that it matches
+    // any changes that took place while updating
+    UpdateViewMatrix();
 }
 
 // --------------------------------------------------------
