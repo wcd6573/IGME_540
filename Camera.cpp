@@ -45,7 +45,7 @@ Camera::~Camera() { }
 ///////////////////////////////////////////////////////////////////////////////
 // --------------------------------------------------------
 // Handles user input to move and rotate the camera.
-// Updates the view matrix once any transformations happem.
+// Updates the view matrix once any transformations happen.
 // --------------------------------------------------------
 void Camera::Update(float dt)
 {
