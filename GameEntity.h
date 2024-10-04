@@ -11,6 +11,7 @@ GameEntity Header
 
 #include "Mesh.h"
 #include "Transform.h"
+#include "Camera.h"
 
 // --------------------------------------------------------
 // A class representing an entity in a game. 
@@ -27,7 +28,8 @@ public:
 
 	Transform* GetTransform();
 	std::shared_ptr<Mesh> GetMesh();
-	void Draw(Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstBuffer);
+	void Draw(Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstBuffer,
+		std::shared_ptr<Camera> camera);
 
 private:
 	Transform transform;

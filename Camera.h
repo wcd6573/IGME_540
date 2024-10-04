@@ -21,13 +21,13 @@ public:
 	// it doesn't always start at the origin
 	Camera(DirectX::XMFLOAT3 startPosition, 
 		float _aspectRatio,
-		float _fov = 60.0f,			// Give default values
-		float _nearClip = 0.01f,	// for some fields 
+		float _fov = DirectX::XM_PIDIV4,// Give default values
+		float _nearClip = 0.01f,		// for some fields 
 		float _farClip = 100.0f,
 		bool _doPerspective = true,
 		float _orthoWidth = 10.0f,
-		float _moveSpeed = 10.0f,
-		float _lookSpeed = 2.0f);
+		float _moveSpeed = 5.0f,
+		float _lookSpeed = 0.002f);
 	~Camera();
 
 	// Update methods
@@ -45,7 +45,7 @@ public:
 	float GetFarClip();
 	float GetMoveSpeed();
 	float GetLookSpeed();
-	bool GetProjectionType();
+	bool DoingPerspective();
 
 	// Setters
 	void SetFieldOfView(float _fov);
@@ -53,7 +53,7 @@ public:
 	void SetFarClip(float _farClip);
 	void SetMoveSpeed(float _moveSpeed);
 	void SetLookSpeed(float _lookSpeed);
-	void SetProjectionType(bool _doPerspective);
+	void SetPerspective(bool _doPerspective);
 
 private:
 	// Basic fields

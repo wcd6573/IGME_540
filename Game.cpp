@@ -111,6 +111,12 @@ void Game::Initialize()
 	offset[0] = -0.25f;
 	offset[1] = -0.10f;
 	offset[2] = 0.0f;
+
+	// Create the main camera
+	camera = std::make_shared<Camera>(
+		XMFLOAT3(0, 0, -5),
+		Window::AspectRatio()
+	);
 }
 
 
@@ -369,6 +375,13 @@ void Game::CreateGeometry()
 // --------------------------------------------------------
 void Game::OnResize()
 {
+	// Only calculate projection matrix if there's actually
+	// a camera to use ( OnResize can be called before it
+	// is initialized, which leads to some problems ).
+	if (camera)
+	{
+		camera->UpdateProjectionMatrix(Window::AspectRatio());
+	}
 }
 
 
@@ -406,6 +419,9 @@ void Game::Update(float deltaTime, float totalTime)
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::KeyDown(VK_ESCAPE))
 		Window::Quit();
+
+	// Update the camera last
+	camera->Update(deltaTime);
 }
 
 
@@ -423,10 +439,13 @@ void Game::Draw(float deltaTime, float totalTime)
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
+	// Send the projection and view matrices through the constant buffer
+	
+
 	// DRAW entities
 	for (int i = 0; i < entities.size(); ++i)
 	{
-		entities[i].get()->Draw(vsConstBuffer);
+		entities[i].get()->Draw(vsConstBuffer, camera);
 	}
 
 	// Frame END

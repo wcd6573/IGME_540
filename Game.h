@@ -12,6 +12,7 @@
 
 #include "Mesh.h"
 #include "GameEntity.h"
+#include "Camera.h"
 
 class Game
 {
@@ -51,6 +52,9 @@ private:
 	// Vector fields to easily loop through these elements
 	std::vector<std::shared_ptr<Mesh>> meshes;
 	std::vector<std::shared_ptr<GameEntity>> entities;
+
+	// Camera
+	std::shared_ptr<Camera> camera;
 
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the

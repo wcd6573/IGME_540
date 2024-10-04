@@ -174,7 +174,7 @@ float Camera::GetNearClip() { return nearClip; }
 float Camera::GetFarClip() { return farClip; }
 float Camera::GetMoveSpeed() { return moveSpeed; }
 float Camera::GetLookSpeed() { return lookSpeed; }
-bool Camera::GetProjectionType() { return doPerspective; }
+bool Camera::DoingPerspective() { return doPerspective; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -185,4 +185,4 @@ void Camera::SetNearClip(float _nearClip) { nearClip = _nearClip; }
 void Camera::SetFarClip(float _farClip) { farClip = _farClip; }
 void Camera::SetMoveSpeed(float _moveSpeed) { moveSpeed = _moveSpeed; }
 void Camera::SetLookSpeed(float _lookSpeed) { lookSpeed = _lookSpeed; }
-void Camera::SetProjectionType(bool _doPerspective) { doPerspective = _doPerspective; }
+void Camera::SetPerspective(bool _doPerspective) { doPerspective = _doPerspective; }

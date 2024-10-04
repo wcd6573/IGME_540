@@ -41,7 +41,8 @@ std::shared_ptr<Mesh> GameEntity::GetMesh()
 // Note: this code could go in a separate "Renderer" class,
 //		 if I felt like doing that way
 // --------------------------------------------------------
-void GameEntity::Draw(Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstBuffer)
+void GameEntity::Draw(Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstBuffer,
+	std::shared_ptr<Camera> camera)
 {
 	// Create the struct to send data to the vertex shader:
 	//	- Get the world matrix from the transform, 
@@ -49,6 +50,8 @@ void GameEntity::Draw(Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstBuffer)
 	VertexShaderExternalData vsData;
 	vsData.world = transform.GetWorldMatrix();
 	vsData.colorTint = XMFLOAT4(0.5f, 0.5f, 1.0f, 1.0f);
+	vsData.view = camera->GetViewMatrix();
+	vsData.projection = camera->GetProjectionMatrix();
 
 	// Bind constant buffer
 	D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
