@@ -1,5 +1,5 @@
 // William Duprey
-// 9/24/24
+// 10/3/24
 // Game Class Implementation
 // Modified from starter code provided by Prof. Chris Cascioli
 
@@ -112,11 +112,34 @@ void Game::Initialize()
 	offset[1] = -0.10f;
 	offset[2] = 0.0f;
 
-	// Create the main camera
-	camera = std::make_shared<Camera>(
+	// --- Create a bunch of cameras ---
+	// Standard, default camera
+	cameras.push_back(std::make_shared<Camera>(
 		XMFLOAT3(0, 0, -5),
 		Window::AspectRatio()
-	);
+	));
+	
+	// Unmoving (unless changed with ImGui), orthographic camera
+	cameras.push_back(std::make_shared<Camera>(
+		XMFLOAT3(3, 1, -3),
+		Window::AspectRatio(),
+		XM_PIDIV4,
+		0.01f,
+		100.0f,
+		false,			// Don't do perspective (do orthographic)
+		7.5f,			// Ortho width
+		0.0f,			// No move speed
+		0.0f			// No look speed
+	));
+	cameras[0]->GetTransform()->Rotate(0.25f, -1, 0);
+	
+	// Fisheye camera
+	cameras.push_back(std::make_shared<Camera>(
+		XMFLOAT3(0, 0, -3),
+		Window::AspectRatio(),
+		XM_PI - 0.1f
+	));
+	activeCam = cameras[0];
 }
 
 
@@ -273,7 +296,7 @@ void Game::CreateGeometry()
 		{ XMFLOAT3(-.43f, -.33f, +0.0f), grey },	// 2 -- (1, 2)
 		{ XMFLOAT3(-.36f, -.25f, +0.0f), grey },	// 3 -- (2, 3)
 		{ XMFLOAT3(-.29f, -.42f, +0.0f), grey },	// 4 -- (3, 1)
-		{ XMFLOAT3(-.214f, -.33f, +0.0f), darkGrey },// 5 -- (4, 2)
+		{ XMFLOAT3(-.214f, -.33f, +0.0f),darkGrey },// 5 -- (4, 2)
 		{ XMFLOAT3(-.071f, -0.5f, +0.0f), grey },	// 6 -- (6, 0)
 		{ XMFLOAT3(.214f, -.33f, +0.0f), darkGrey },// 7 -- (10, 2)
 		{ XMFLOAT3(.071f, -0.5f, +0.0f), grey },	// 8 -- (8, 0)
@@ -284,7 +307,7 @@ void Game::CreateGeometry()
 		{ XMFLOAT3(+0.5f, -.25f, +0.0f), grey },	// 13 - (14, 3)
 		// Vertices for the band:							
 		{ XMFLOAT3(.286f, -.083f, +0.0f), darkGrey },// 14 - (11, 5)
-		{ XMFLOAT3(-.286f, -.083f, +0.0f), darkGrey },// 15 - (3, 5)
+		{ XMFLOAT3(-.286f, -.083f,+0.0f), darkGrey },// 15 - (3, 5)
 		// Vertices for the top:							
 		{ XMFLOAT3(.429f, +0.5f, +0.0f), grey },	// 16 - (13, 12)
 		{ XMFLOAT3(-.43f, +0.5f, +0.0f), grey },	// 17 - (1, 12)
@@ -378,9 +401,9 @@ void Game::OnResize()
 	// Only calculate projection matrix if there's actually
 	// a camera to use ( OnResize can be called before it
 	// is initialized, which leads to some problems ).
-	if (camera)
+	if (activeCam)
 	{
-		camera->UpdateProjectionMatrix(Window::AspectRatio());
+		activeCam->UpdateProjectionMatrix(Window::AspectRatio());
 	}
 }
 
@@ -421,7 +444,7 @@ void Game::Update(float deltaTime, float totalTime)
 		Window::Quit();
 
 	// Update the camera last
-	camera->Update(deltaTime);
+	activeCam->Update(deltaTime);
 }
 
 
@@ -445,7 +468,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	// DRAW entities
 	for (int i = 0; i < entities.size(); ++i)
 	{
-		entities[i].get()->Draw(vsConstBuffer, camera);
+		entities[i].get()->Draw(vsConstBuffer, activeCam);
 	}
 
 	// Frame END
@@ -474,7 +497,6 @@ void Game::Draw(float deltaTime, float totalTime)
 ///////////////////////////////////////////////////////////////////////////////
 // ------------------------ UPDATE HELPER METHODS -------------------------- //
 ///////////////////////////////////////////////////////////////////////////////
-
 // --------------------------------------------------------
 // Updates ImGui with time, window dimensions, and input.
 // Called at the start of a new frame.
@@ -596,7 +618,90 @@ void Game::BuildUI()
 		ImGui::TreePop();
 	}
 
+	// Create a collapsible header for camera details
+	if (ImGui::TreeNode("Camera"))
+	{
+		if (ImGui::TreeNode("Camera Select")) 
+		{
+			if (ImGui::BeginListBox("Cameras"))
+			{
+				for (int i = 0; i < cameras.size(); ++i)
+				{
+					// This feels stupid, there's 
+					// probably a much better way
+					if (ImGui::Selectable(
+						std::string("Camera ").append(
+							std::to_string(i + 1)).c_str()))
+					{
+						// Set the currently active camera
+						activeCam = cameras[i];
+					}
+				}
+				ImGui::EndListBox();
+			}
+			ImGui::TreePop();	// End of camera sleect
+		}
+
+		if (ImGui::TreeNode("Camera Details"))
+		{
+			// Local variables for ImGui to use
+			Transform* camTrans = activeCam->GetTransform().get();
+			XMFLOAT3 camPos = camTrans->GetPosition();
+			XMFLOAT3 camRot = camTrans->GetRotation();
+			float nearClip = activeCam->GetNearClip();
+			float farClip = activeCam->GetFarClip();
+			bool doingPerspective = activeCam->DoingPerspective();
+			float camFov = activeCam->GetFieldOfView();
+			float camOrthoWidth = activeCam->GetOrthographicWidth();
+
+			// Controls for camera properties
+			if (ImGui::DragFloat3("Position", &camPos.x, 0.01f))
+			{
+				camTrans->SetPosition(camPos);
+			}
+			if (ImGui::DragFloat3("Rotation", &camRot.x, 0.01f))
+			{
+				camTrans->SetRotation(camRot);
+			}
+			if (ImGui::DragFloat("Near Clip", &nearClip, 0.01f, 0.01f, farClip))
+			{
+				activeCam->SetNearClip(nearClip);
+			}
+			if (ImGui::DragFloat("Far Clip", &farClip, 1, nearClip, 1000))
+			{
+				activeCam->SetFarClip(farClip);
+			}
+
+			// Change mode of projection
+			if (ImGui::Checkbox("Perspective Projection", &doingPerspective))
+			{
+				activeCam->SetPerspective(doingPerspective);
+			}
+			// If perspective, show FOV
+			if (doingPerspective)
+			{
+				if (ImGui::DragFloat("Field of View", 
+					&camFov, 0.01f, 0.1f, XM_PI))
+				{
+					activeCam->SetFieldOfView(camFov);
+				}
+			}
+			// If orthographic, show orthographic width
+			else
+			{
+				if (ImGui::DragFloat("Orthographic Width", 
+					&camOrthoWidth, 0.1f, 0.1f, 20))
+				{
+					activeCam->SetOrthographicWidth(camOrthoWidth);
+				}
+			}
+
+			ImGui::TreePop();	// End of Camera details
+		}
+
+		ImGui::TreePop();	// End of Camera header
+	}
+
 	// Finish creating the ImGui Debug Window
 	ImGui::End();
 }
-

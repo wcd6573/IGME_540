@@ -170,6 +170,7 @@ XMFLOAT4X4 Camera::GetProjectionMatrix() { return projMatrix; }
 std::shared_ptr<Transform> Camera::GetTransform() { return transform; }
 float Camera::GetAspectRatio() { return aspectRatio; }
 float Camera::GetFieldOfView() { return fov; }
+float Camera::GetOrthographicWidth() { return orthoWidth; }
 float Camera::GetNearClip() { return nearClip; }
 float Camera::GetFarClip() { return farClip; }
 float Camera::GetMoveSpeed() { return moveSpeed; }
@@ -180,9 +181,51 @@ bool Camera::DoingPerspective() { return doPerspective; }
 ///////////////////////////////////////////////////////////////////////////////
 // ------------------------------- SETTERS --------------------------------- //
 ///////////////////////////////////////////////////////////////////////////////
-void Camera::SetFieldOfView(float _fov) { fov = _fov; }
-void Camera::SetNearClip(float _nearClip) { nearClip = _nearClip; }
-void Camera::SetFarClip(float _farClip) { farClip = _farClip; }
 void Camera::SetMoveSpeed(float _moveSpeed) { moveSpeed = _moveSpeed; }
 void Camera::SetLookSpeed(float _lookSpeed) { lookSpeed = _lookSpeed; }
-void Camera::SetPerspective(bool _doPerspective) { doPerspective = _doPerspective; }
+
+// For all these methods that change the projection matrix,
+// avoid recalculating projection matrix unnecessarily
+void Camera::SetFieldOfView(float _fov) 
+{ 
+    if (fov != _fov)
+    {
+        fov = _fov;
+        UpdateProjectionMatrix(aspectRatio);
+    }
+}
+void Camera::SetOrthographicWidth(float _orthoWidth) 
+{ 
+    if (orthoWidth != _orthoWidth)
+    {
+        orthoWidth = _orthoWidth;
+        UpdateProjectionMatrix(aspectRatio);
+    }
+}
+
+void Camera::SetNearClip(float _nearClip) 
+{ 
+    if (nearClip != _nearClip)
+    {
+        nearClip = _nearClip;
+        UpdateProjectionMatrix(aspectRatio);
+    }
+}
+
+void Camera::SetFarClip(float _farClip) 
+{ 
+    if (farClip != _farClip)
+    {
+        farClip = _farClip;
+        UpdateProjectionMatrix(aspectRatio);
+    }
+}
+
+void Camera::SetPerspective(bool _doPerspective) 
+{ 
+    if (doPerspective != _doPerspective)
+    {
+        doPerspective = _doPerspective;
+        UpdateProjectionMatrix(aspectRatio);
+    }
+}

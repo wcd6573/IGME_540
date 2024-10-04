@@ -41,6 +41,7 @@ public:
 	std::shared_ptr<Transform> GetTransform();
 	float GetAspectRatio();
 	float GetFieldOfView();
+	float GetOrthographicWidth();
 	float GetNearClip();
 	float GetFarClip();
 	float GetMoveSpeed();
@@ -49,6 +50,7 @@ public:
 
 	// Setters
 	void SetFieldOfView(float _fov);
+	void SetOrthographicWidth(float _orthoWidth);
 	void SetNearClip(float _nearClip);
 	void SetFarClip(float _farClip);
 	void SetMoveSpeed(float _moveSpeed);

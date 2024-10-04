@@ -49,12 +49,19 @@ private:
 	std::shared_ptr<float[]> offset;
 	std::shared_ptr<float[]> colorTint;
 
-	// Vector fields to easily loop through these elements
+	// Vectors of shared pointers to easily loop through these elements
 	std::vector<std::shared_ptr<Mesh>> meshes;
 	std::vector<std::shared_ptr<GameEntity>> entities;
+	std::vector<std::shared_ptr<Camera>> cameras;
 
-	// Camera
-	std::shared_ptr<Camera> camera;
+	// One camera to rule them all
+	// One camera to find them		
+	// One camera to bring them all 
+	// and in the darkness, bind them
+	// (there's probably a pun to be made here about
+	// the actual process of binding, but I'm too
+	// tired to find it right now)
+	std::shared_ptr<Camera> activeCam;
 
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
