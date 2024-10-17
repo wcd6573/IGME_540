@@ -35,8 +35,7 @@ public:
 	void SetMesh(std::shared_ptr<Mesh> _mesh);
 	void SetMaterial(std::shared_ptr<Material> _material);
 
-	void Draw(Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstBuffer,
-		std::shared_ptr<Camera> camera);
+	void Draw(std::shared_ptr<Camera> camera);
 
 private:
 	Transform transform;

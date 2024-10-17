@@ -70,13 +70,5 @@ private:
 	// SimpleShader pointers for current shaders
 	std::shared_ptr<SimpleVertexShader> vertexShader;
 	std::shared_ptr<SimplePixelShader> pixelShader;
-
-	// Note the usage of ComPtr below
-	//  - This is a smart pointer for objects that abide by the
-	//     Component Object Model, which DirectX objects do
-	//  - More info here: https://github.com/Microsoft/DirectXTK/wiki/ComPtr
-
-	// Constant buffer used for the Vertex Shader
-	Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstBuffer;
 };
 

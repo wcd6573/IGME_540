@@ -9,7 +9,6 @@
 #include "Input.h"
 #include "PathHelpers.h"
 #include "Window.h"
-#include "BufferStructs.h"
 
 #include <DirectXMath.h>
 
@@ -51,25 +50,6 @@ void Game::Initialize()
 	LoadShaders();
 	CreateMaterials();
 	CreateGeometry();
-
-	// Initialize the constant buffer for the vertex shader
-	{
-		// Set up the constant buffer description
-		D3D11_BUFFER_DESC cbDesc = {};
-		cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		// Size must be a multiple of 16, use math to ensure that
-		cbDesc.ByteWidth = (sizeof(VertexShaderExternalData) + 15) / 16 * 16;
-		cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		cbDesc.Usage = D3D11_USAGE_DYNAMIC;
-
-		// Actually create the buffer, sets the ComPtr
-		Graphics::Device->CreateBuffer(
-			&cbDesc, 0, vsConstBuffer.GetAddressOf());
-
-		// Bind the buffer to the pipeline
-		Graphics::Context->VSSetConstantBuffers(
-			0, 1, vsConstBuffer.GetAddressOf());
-	}
 
 	// Set initial graphics API state
 	//  - These settings persist until we change them
@@ -123,7 +103,7 @@ void Game::Initialize()
 		0.0f,			// No move speed
 		0.0f			// No look speed
 	));
-	cameras[0]->GetTransform()->Rotate(0.25f, -1, 0);
+	cameras[1]->GetTransform()->Rotate(0.25f, -1, 0);
 	
 	// Fisheye camera
 	cameras.push_back(std::make_shared<Camera>(
@@ -430,13 +410,10 @@ void Game::Draw(float deltaTime, float totalTime)
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
-	// Send the projection and view matrices through the constant buffer
-	
-
 	// DRAW entities
 	for (int i = 0; i < entities.size(); ++i)
 	{
-		entities[i].get()->Draw(vsConstBuffer, activeCam);
+		entities[i].get()->Draw(activeCam);
 	}
 
 	// Frame END

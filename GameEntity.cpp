@@ -5,7 +5,6 @@ GameEntity Implementation
 */
 
 #include "GameEntity.h"
-#include "BufferStructs.h"
 using namespace DirectX;
 
 // --------------------------------------------------------
@@ -49,33 +48,22 @@ void GameEntity::SetMaterial(std::shared_ptr<Material> _material) { material = _
 // Note: this code could go in a separate "Renderer" class,
 //		 if I felt like doing that way
 // --------------------------------------------------------
-void GameEntity::Draw(Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstBuffer,
-	std::shared_ptr<Camera> camera)
+void GameEntity::Draw(std::shared_ptr<Camera> camera)
 {
 	// Activate the correct shaders
 	material->GetVertexShader()->SetShader();
 	material->GetPixelShader()->SetShader();
 
-	// Create the struct to send data to the vertex shader:
-	//	- Get the world matrix from the transform, 
-	//	- and just tint blue by default
-	VertexShaderExternalData vsData;
-	vsData.world = transform.GetWorldMatrix();
-	vsData.colorTint = XMFLOAT4(0.5f, 0.5f, 1.0f, 1.0f);
-	vsData.view = camera->GetViewMatrix();
-	vsData.projection = camera->GetProjectionMatrix();
+	std::shared_ptr<SimpleVertexShader> vs = material->GetVertexShader();
 
-	// Bind constant buffer
-	D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
-	Graphics::Context->Map(
-		vsConstBuffer.Get(), 0,
-		D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
-
-	// Brutally efficient copy data to GPU
-	memcpy(mappedBuffer.pData, &vsData, sizeof(vsData));
-
-	// Stop using the constant buffer
-	Graphics::Context->Unmap(vsConstBuffer.Get(), 0);
+	// Strings must exactly match variable names in shader cbuffer
+	vs->SetFloat4("colorTint", material->GetColorTint());
+	vs->SetMatrix4x4("world", transform.GetWorldMatrix());
+	vs->SetMatrix4x4("view", camera->GetViewMatrix());
+	vs->SetMatrix4x4("projection", camera->GetProjectionMatrix());
+	
+	// Copy data to the GPU
+	vs->CopyAllBufferData();
 
 	// Finally, call the mesh draw method
 	// (also sets vertex and index buffers)
