@@ -21,14 +21,15 @@ cbuffer ExternalData : register(b0)
 // - Each variable must have a semantic, which defines its usage
 struct VertexToPixel
 {
-	// Data type
-	//  |
-	//  |   Name          Semantic
-	//  |    |                |
-	//  v    v                v
-	float4 screenPosition	: SV_POSITION;
+    // Data type
+    //  |
+    //  |   Name          Semantic
+    //  |    |                |
+    //  v    v                v
+    float4 screenPosition	: SV_POSITION;
     float3 normal : NORMAL;
     float2 uv : TEXCOORD;
+    float3 position : POSITION;
 };
 
 // --------------------------------------------------------
@@ -42,9 +43,9 @@ struct VertexToPixel
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	// Just return the input color
-	// - This color (like most values passing through the rasterizer) is 
-	//   interpolated for each pixel between the corresponding vertices 
-	//   of the triangle we're rendering
+    // Just return the input color
+    // - This color (like most values passing through the rasterizer) is 
+    //   interpolated for each pixel between the corresponding vertices 
+    //   of the triangle we're rendering
     return colorTint;
 }

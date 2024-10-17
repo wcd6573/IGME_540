@@ -99,9 +99,8 @@ void Game::Initialize()
 		0.01f,
 		100.0f,
 		false,			// Don't do perspective (do orthographic)
-		7.5f,			// Ortho width
-		0.0f,			// No move speed
-		0.0f			// No look speed
+		17.5f,			// Ortho width
+		0.5f			// Slow move speed
 	));
 	cameras[1]->GetTransform()->Rotate(0.25f, -1, 0);
 	
@@ -153,6 +152,11 @@ void Game::LoadShadersAndCreateMaterials()
 		std::make_shared<SimplePixelShader>(
 			Graphics::Device, Graphics::Context,
 			FixPath(L"normalPS.cso").c_str());
+	std::shared_ptr<SimplePixelShader> voronoi =
+		std::make_shared<SimplePixelShader>(
+			Graphics::Device, Graphics::Context,
+			FixPath(L"Voronoi.cso").c_str());
+
 
 	// --- Create some Materials ---
 	// Normal Shader
@@ -169,7 +173,7 @@ void Game::LoadShadersAndCreateMaterials()
 	materials.push_back(std::make_shared<Material>(
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 		vertexShader,
-		normalPS));
+		voronoi));
 	// Purple color tint
 	materials.push_back(std::make_shared<Material>(
 		XMFLOAT4(0.7f, 0.0f, 0.6f, 1.0f),
@@ -222,7 +226,7 @@ void Game::CreateGeometry()
 	entities.push_back(std::make_shared<GameEntity>(
 		meshes[0], materials[1]));
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[0], materials[3]));
+		meshes[0], materials[2]));
 	// Cylinders
 	entities.push_back(std::make_shared<GameEntity>(
 		meshes[1], materials[0]));
@@ -243,7 +247,7 @@ void Game::CreateGeometry()
 	entities.push_back(std::make_shared<GameEntity>(
 		meshes[3], materials[1]));
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[3], materials[2]));	// Voronoi
+		meshes[3], materials[2]));
 	// Toruses... Tori?
 	entities.push_back(std::make_shared<GameEntity>(
 		meshes[4], materials[0]));
@@ -338,7 +342,10 @@ void Game::Draw(float deltaTime, float totalTime)
 	// DRAW entities
 	for (int i = 0; i < entities.size(); ++i)
 	{
-		entities[i].get()->Draw(activeCam);
+		// Set a time value (if there is one)
+		entities[i]->GetMaterial()->GetPixelShader()->SetFloat("time", totalTime);
+		
+		entities[i]->Draw(activeCam);
 	}
 
 	// Frame END
