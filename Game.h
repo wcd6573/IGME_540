@@ -13,6 +13,7 @@
 #include "Mesh.h"
 #include "GameEntity.h"
 #include "Camera.h"
+#include "Material.h"
 #include "SimpleShader.h"
 
 class Game
@@ -34,6 +35,7 @@ private:
 
 	// Initialization helper methods - feel free to customize, combine, remove, etc.
 	void LoadShaders();
+	void CreateMaterials();
 	void CreateGeometry();
 
 	// ImGui helper methods
@@ -54,6 +56,7 @@ private:
 	std::vector<std::shared_ptr<Mesh>> meshes;
 	std::vector<std::shared_ptr<GameEntity>> entities;
 	std::vector<std::shared_ptr<Camera>> cameras;
+	std::vector<std::shared_ptr<Material>> materials;
 
 	// One camera to rule them all
 	// One camera to find them		
@@ -64,6 +67,7 @@ private:
 	// tired to find it right now)
 	std::shared_ptr<Camera> activeCam;
 
+	// SimpleShader pointers for current shaders
 	std::shared_ptr<SimpleVertexShader> vertexShader;
 	std::shared_ptr<SimplePixelShader> pixelShader;
 

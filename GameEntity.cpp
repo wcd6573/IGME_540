@@ -12,12 +12,17 @@ using namespace DirectX;
 // Constructor for a GameEntity. Creates a new Transform,
 // and sets the given shared pointer to a Mesh.
 // --------------------------------------------------------
-GameEntity::GameEntity(std::shared_ptr<Mesh> _mesh)
+GameEntity::GameEntity(std::shared_ptr<Mesh> _mesh,
+	std::shared_ptr<Material> _material)
 {
 	transform = Transform();
 	mesh = _mesh;
+	material = _material;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// ------------------------------- GETTERS --------------------------------- //
+///////////////////////////////////////////////////////////////////////////////
 // --------------------------------------------------------
 // Returns a pointer to the entity's Transform, allowing
 // it to be modified by code outside of this class.
@@ -27,13 +32,16 @@ Transform* GameEntity::GetTransform()
 	return &transform;
 }
 
-// --------------------------------------------------------
-// Simple getter for the Mesh shared pointer.
-// --------------------------------------------------------
-std::shared_ptr<Mesh> GameEntity::GetMesh()
-{
-	return mesh;
-}
+std::shared_ptr<Mesh> GameEntity::GetMesh() { return mesh; }
+std::shared_ptr<Material> GameEntity::GetMaterial() { return material; }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// ------------------------------- SETTERS --------------------------------- //
+///////////////////////////////////////////////////////////////////////////////
+void GameEntity::SetMesh(std::shared_ptr<Mesh> _mesh) { mesh = _mesh; }
+void GameEntity::SetMaterial(std::shared_ptr<Material> _material) { material = _material; }
+
 
 // --------------------------------------------------------
 // Draws the GameEntity using its transform, mesh, and
@@ -44,6 +52,10 @@ std::shared_ptr<Mesh> GameEntity::GetMesh()
 void GameEntity::Draw(Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstBuffer,
 	std::shared_ptr<Camera> camera)
 {
+	// Activate the correct shaders
+	material->GetVertexShader()->SetShader();
+	material->GetPixelShader()->SetShader();
+
 	// Create the struct to send data to the vertex shader:
 	//	- Get the world matrix from the transform, 
 	//	- and just tint blue by default

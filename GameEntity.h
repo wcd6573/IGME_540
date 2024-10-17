@@ -12,6 +12,7 @@ GameEntity Header
 #include "Mesh.h"
 #include "Transform.h"
 #include "Camera.h"
+#include "Material.h"
 
 // --------------------------------------------------------
 // A class representing an entity in a game. 
@@ -21,18 +22,25 @@ GameEntity Header
 class GameEntity
 {
 public:
-	GameEntity(std::shared_ptr<Mesh> _mesh);
+	GameEntity(std::shared_ptr<Mesh> _mesh,
+		std::shared_ptr<Material> _material);
 
 	// No destructor since it would be really bad if
 	// an entity destroyed a Mesh it was sharing
 
 	Transform* GetTransform();
 	std::shared_ptr<Mesh> GetMesh();
+	std::shared_ptr<Material> GetMaterial();
+
+	void SetMesh(std::shared_ptr<Mesh> _mesh);
+	void SetMaterial(std::shared_ptr<Material> _material);
+
 	void Draw(Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstBuffer,
 		std::shared_ptr<Camera> camera);
 
 private:
 	Transform transform;
 	std::shared_ptr<Mesh> mesh;
+	std::shared_ptr<Material> material;
 };
 

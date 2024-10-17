@@ -49,6 +49,7 @@ void Game::Initialize()
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
 	LoadShaders();
+	CreateMaterials();
 	CreateGeometry();
 
 	// Initialize the constant buffer for the vertex shader
@@ -163,6 +164,34 @@ void Game::LoadShaders()
 		FixPath(L"PixelShader.cso").c_str());
 }
 
+// --------------------------------------------------------
+// Sets up some simple materials,
+// before any entities are made.
+// --------------------------------------------------------
+void Game::CreateMaterials()
+{
+	// --- Create some Materials ---
+	// Purple color tint
+	materials.push_back(std::make_shared<Material>(
+		XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f),
+		vertexShader,
+		pixelShader
+	));
+
+	// Grey color tint
+	materials.push_back(std::make_shared<Material>(
+		XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f),
+		vertexShader,
+		pixelShader
+	));
+
+	// Teal color tint
+	materials.push_back(std::make_shared<Material>(
+		XMFLOAT4(0.0f, 0.7f, 0.7f, 1.0f),
+		vertexShader,
+		pixelShader
+	));
+}
 
 // --------------------------------------------------------
 // Creates the geometry we're going to draw
@@ -299,11 +328,16 @@ void Game::CreateGeometry()
 
 	// --------------- MAKE SOME ENTITIES -----------------
 	// Create shared pointers using the above meshes
-	std::shared_ptr<GameEntity> hat1 = std::make_shared<GameEntity>(meshes[1]);
-	std::shared_ptr<GameEntity> hat2 = std::make_shared<GameEntity>(meshes[1]);
-	std::shared_ptr<GameEntity> hat3 = std::make_shared<GameEntity>(meshes[1]);
-	std::shared_ptr<GameEntity> quad1 = std::make_shared<GameEntity>(meshes[2]);
-	std::shared_ptr<GameEntity> tri1 = std::make_shared<GameEntity>(meshes[0]);
+	std::shared_ptr<GameEntity> hat1 = std::make_shared<GameEntity>(
+		meshes[1], materials[0]);
+	std::shared_ptr<GameEntity> hat2 = std::make_shared<GameEntity>(
+		meshes[1], materials[1]);
+	std::shared_ptr<GameEntity> hat3 = std::make_shared<GameEntity>(
+		meshes[1], materials[2]);
+	std::shared_ptr<GameEntity> quad1 = std::make_shared<GameEntity>(
+		meshes[2], materials[1]);
+	std::shared_ptr<GameEntity> tri1 = std::make_shared<GameEntity>(
+		meshes[0], materials[2]);
 
 	// Alter positions so that they're not all on top of each other
 	hat1.get()->GetTransform()->MoveAbsolute(0.5f, 0.5f, 0);
