@@ -1,5 +1,5 @@
 // William Duprey
-// 9/12/24
+// 10/16/24
 // Mesh Class Header
 
 #pragma once
@@ -22,6 +22,7 @@ public:
 	Mesh(Vertex* vertices, size_t _vertexCount,
 		UINT* indices, size_t _indexCount,
 		const char* _name);
+	Mesh(const char* _name, const char* objFile);
 	~Mesh();
 
 	// No copy constructor and copy assignment operator
@@ -38,6 +39,10 @@ public:
 	void SetBuffersAndDraw();
 
 private:
+	// Helper method for creating vertex and index buffers
+	void CreateBuffers(Vertex* vertices, size_t _vertexCount,
+		UINT* indices, size_t _indexCount);
+
 	// Vertices of the triangles making up the mesh
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
 	UINT vertexCount;

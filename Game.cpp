@@ -178,37 +178,29 @@ void Game::CreateMaterials()
 // --------------------------------------------------------
 void Game::CreateGeometry()
 {
+	// --- Load meshes from files ---
+	meshes.push_back(std::make_shared<Mesh>("Cube",
+		FixPath("../../Assets/Models/cube.obj").c_str()));
+	meshes.push_back(std::make_shared<Mesh>("Cylinder",
+		FixPath("../../Assets/Models/cylinder.obj").c_str()));
+	meshes.push_back(std::make_shared<Mesh>("Helix",
+		FixPath("../../Assets/Models/helix.obj").c_str()));
+	meshes.push_back(std::make_shared<Mesh>("Quad",
+		FixPath("../../Assets/Models/quad.obj").c_str()));
+	meshes.push_back(std::make_shared<Mesh>("Quad Double Sided",
+		FixPath("../../Assets/Models/quad_double_sided.obj").c_str()));
+	meshes.push_back(std::make_shared<Mesh>("Sphere", 
+		FixPath("../../Assets/Models/sphere.obj").c_str()));
+	meshes.push_back(std::make_shared<Mesh>("Torus",
+		FixPath("../../Assets/Models/torus.obj").c_str()));
+
+
 	// --------------- MAKE SOME ENTITIES -----------------
 	// Create shared pointers using the above meshes
-	std::shared_ptr<GameEntity> hat1 = std::make_shared<GameEntity>(
-		meshes[1], materials[0]);
-	std::shared_ptr<GameEntity> hat2 = std::make_shared<GameEntity>(
-		meshes[1], materials[1]);
-	std::shared_ptr<GameEntity> hat3 = std::make_shared<GameEntity>(
-		meshes[1], materials[2]);
-	std::shared_ptr<GameEntity> quad1 = std::make_shared<GameEntity>(
+	std::shared_ptr<GameEntity> helix1 = std::make_shared<GameEntity>(
 		meshes[2], materials[1]);
-	std::shared_ptr<GameEntity> tri1 = std::make_shared<GameEntity>(
-		meshes[0], materials[2]);
-
-	// Alter positions so that they're not all on top of each other
-	hat1.get()->GetTransform()->MoveAbsolute(0.5f, 0.5f, 0);
 	
-	hat2.get()->GetTransform()->MoveAbsolute(0.75f, -0.75f, 0);
-	hat2.get()->GetTransform()->Scale(0.1f, 0.1f, 0);
-	
-	hat3.get()->GetTransform()->MoveAbsolute(-0.5f, 0, 0);
-	hat3.get()->GetTransform()->Scale(0.5f, 1.5f, 0);
-	hat3.get()->GetTransform()->Rotate(0, 0, XM_PI);
-
-	quad1.get()->GetTransform()->MoveAbsolute(0.1f, -0.65f, 0);
-
-	// Add all entities to the vector
-	entities.push_back(hat1);
-	entities.push_back(hat2);
-	entities.push_back(hat3);
-	entities.push_back(quad1);
-	entities.push_back(tri1);
+	entities.push_back(helix1);
 
 	/*
 	* Keeping the top hat commented out because I love it too much
@@ -302,6 +294,7 @@ void Game::Update(float deltaTime, float totalTime)
 	BuildUI();
 
 	// --- Move game entities ---
+	/*
 	// Scale calculation taken from Demo code
 	float scale = (float)sin(totalTime * 5) * 0.5f + 1.0f;
 	
@@ -322,6 +315,7 @@ void Game::Update(float deltaTime, float totalTime)
 	// Quad and Tri each just move along the x and y axes respectively
 	entities[3].get()->GetTransform()->SetPosition((float)sin(totalTime), 0, 0);
 	entities[4].get()->GetTransform()->SetPosition(0, (float)sin(totalTime), 0);
+	*/
 
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::KeyDown(VK_ESCAPE))
