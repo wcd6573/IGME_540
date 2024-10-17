@@ -89,18 +89,18 @@ void Camera::Update(float dt)
         // Rotate, mouseY = pitch, mouseX = yaw
         transform->Rotate(mouseY, mouseX, 0);
 
-        // Clamp the yaw values to Pi / 2 and -Pi / 2
+        // Clamp the pitch values
         // (There's probably a way to do this that doesn't
         // involve making a second call to the transform)
         XMFLOAT3 rotate = transform->GetRotation();
-        float yaw = rotate.y;
-        if (yaw < -DirectX::XM_PIDIV2)
+        float pitch = rotate.x;
+        if (pitch < LOWER_LOOK_LIMIT)
         {
-            rotate.y = -DirectX::XM_PIDIV2;
+            rotate.x = LOWER_LOOK_LIMIT;
         }
-        else if (yaw > DirectX::XM_PIDIV2)
+        else if (pitch > UPPER_LOOK_LIMIT)
         {
-            rotate.y = DirectX::XM_PIDIV2;
+            rotate.x = UPPER_LOOK_LIMIT;
         }
         transform->SetRotation(rotate);
     }

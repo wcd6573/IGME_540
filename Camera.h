@@ -72,4 +72,8 @@ private:
 	float lookSpeed;	// How fast you can rotate the camera
 	bool doPerspective;	// perspective, or orthographic projection
 	float orthoWidth;	// Width of orthographic view
+
+	// Constants for constraining the min and max pitch values
+	const float UPPER_LOOK_LIMIT = DirectX::XM_PIDIV2 - 0.05f;
+	const float LOWER_LOOK_LIMIT = -DirectX::XM_PIDIV2 + 0.05f;
 };

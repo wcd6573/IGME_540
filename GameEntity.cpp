@@ -50,20 +50,24 @@ void GameEntity::SetMaterial(std::shared_ptr<Material> _material) { material = _
 // --------------------------------------------------------
 void GameEntity::Draw(std::shared_ptr<Camera> camera)
 {
-	// Activate the correct shaders
-	material->GetVertexShader()->SetShader();
-	material->GetPixelShader()->SetShader();
-
 	std::shared_ptr<SimpleVertexShader> vs = material->GetVertexShader();
+	std::shared_ptr<SimplePixelShader> ps = material->GetPixelShader();
+
+	// Activate the correct shaders
+	vs->SetShader();
+	ps->SetShader();
 
 	// Strings must exactly match variable names in shader cbuffer
-	vs->SetFloat4("colorTint", material->GetColorTint());
 	vs->SetMatrix4x4("world", transform.GetWorldMatrix());
 	vs->SetMatrix4x4("view", camera->GetViewMatrix());
 	vs->SetMatrix4x4("projection", camera->GetProjectionMatrix());
 	
 	// Copy data to the GPU
 	vs->CopyAllBufferData();
+
+	// Do the same for the pixel shader (only needs color tint)
+	ps->SetFloat4("colorTint", material->GetColorTint());
+	ps->CopyAllBufferData();
 
 	// Finally, call the mesh draw method
 	// (also sets vertex and index buffers)
