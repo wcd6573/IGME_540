@@ -47,8 +47,7 @@ void Game::Initialize()
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
-	LoadShaders();
-	CreateMaterials();
+	LoadShadersAndCreateMaterials();
 	CreateGeometry();
 
 	// Set initial graphics API state
@@ -87,9 +86,10 @@ void Game::Initialize()
 	// --- Create a bunch of cameras ---
 	// Standard, default camera
 	cameras.push_back(std::make_shared<Camera>(
-		XMFLOAT3(0, 0, -5),
+		XMFLOAT3(-0.5f, 6.25f, -15.5f),
 		Window::AspectRatio()
 	));
+	cameras[0]->GetTransform()->SetRotation(0.366f, 0, 0);
 	
 	// Unmoving (unless changed with ImGui), orthographic camera
 	cameras.push_back(std::make_shared<Camera>(
@@ -134,47 +134,65 @@ Game::~Game()
 // --------------------------------------------------------
 // Uses SimpleShader to set up necessary shaders.
 // --------------------------------------------------------
-void Game::LoadShaders()
+void Game::LoadShadersAndCreateMaterials()
 {
-	vertexShader = std::make_shared<SimpleVertexShader>(
-		Graphics::Device, Graphics::Context, 
-		FixPath(L"VertexShader.cso").c_str());
-	pixelShader = std::make_shared<SimplePixelShader>(
-		Graphics::Device, Graphics::Context,
-		FixPath(L"PixelShader.cso").c_str());
-}
+	// --- Load Shaders ---
+	std::shared_ptr<SimpleVertexShader> vertexShader = 
+		std::make_shared<SimpleVertexShader>(
+			Graphics::Device, Graphics::Context, 
+			FixPath(L"VertexShader.cso").c_str());
+	std::shared_ptr<SimplePixelShader> pixelShader = 
+		std::make_shared<SimplePixelShader>(
+			Graphics::Device, Graphics::Context,
+			FixPath(L"PixelShader.cso").c_str());
+	std::shared_ptr<SimplePixelShader> uvPS =
+		std::make_shared<SimplePixelShader>(
+			Graphics::Device, Graphics::Context,
+			FixPath(L"uvPS.cso").c_str());
+	std::shared_ptr<SimplePixelShader> normalPS =
+		std::make_shared<SimplePixelShader>(
+			Graphics::Device, Graphics::Context,
+			FixPath(L"normalPS.cso").c_str());
 
-// --------------------------------------------------------
-// Sets up some simple materials,
-// before any entities are made.
-// --------------------------------------------------------
-void Game::CreateMaterials()
-{
 	// --- Create some Materials ---
+	// Normal Shader
+	materials.push_back(std::make_shared<Material>(
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		vertexShader,
+		normalPS));
+	// UV Shader
+	materials.push_back(std::make_shared<Material>(
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		vertexShader,
+		uvPS));
+	// Voronoi Shader
+	materials.push_back(std::make_shared<Material>(
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		vertexShader,
+		normalPS));
 	// Purple color tint
 	materials.push_back(std::make_shared<Material>(
-		XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f),
+		XMFLOAT4(0.7f, 0.0f, 0.6f, 1.0f),
 		vertexShader,
-		pixelShader
-	));
-
+		pixelShader));
 	// Grey color tint
 	materials.push_back(std::make_shared<Material>(
 		XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f),
 		vertexShader,
-		pixelShader
-	));
-
+		pixelShader));
 	// Teal color tint
 	materials.push_back(std::make_shared<Material>(
 		XMFLOAT4(0.0f, 0.7f, 0.7f, 1.0f),
 		vertexShader,
-		pixelShader
-	));
+		pixelShader));
 }
 
 // --------------------------------------------------------
 // Creates the geometry we're going to draw
+// TODO: maybe refactor this to be in the same method
+//		 as the shaders / materials, so that I could use
+//		 named local variables instead of having to
+//       remember indices in the vectors?
 // --------------------------------------------------------
 void Game::CreateGeometry()
 {
@@ -185,86 +203,81 @@ void Game::CreateGeometry()
 		FixPath("../../Assets/Models/cylinder.obj").c_str()));
 	meshes.push_back(std::make_shared<Mesh>("Helix",
 		FixPath("../../Assets/Models/helix.obj").c_str()));
+	meshes.push_back(std::make_shared<Mesh>("Sphere",
+		FixPath("../../Assets/Models/sphere.obj").c_str()));
+	meshes.push_back(std::make_shared<Mesh>("Torus",
+		FixPath("../../Assets/Models/torus.obj").c_str()));
 	meshes.push_back(std::make_shared<Mesh>("Quad",
 		FixPath("../../Assets/Models/quad.obj").c_str()));
 	meshes.push_back(std::make_shared<Mesh>("Quad Double Sided",
 		FixPath("../../Assets/Models/quad_double_sided.obj").c_str()));
-	meshes.push_back(std::make_shared<Mesh>("Sphere", 
-		FixPath("../../Assets/Models/sphere.obj").c_str()));
-	meshes.push_back(std::make_shared<Mesh>("Torus",
-		FixPath("../../Assets/Models/torus.obj").c_str()));
 
-
-	// --------------- MAKE SOME ENTITIES -----------------
-	// Create shared pointers using the above meshes
-	std::shared_ptr<GameEntity> helix1 = std::make_shared<GameEntity>(
-		meshes[2], materials[1]);
+	// --- Create a bunch of entities ---
+	// Create three entities using each mesh
+	// 1st uses normal, 2nd uses UV, 3rd uses tint or fancy
 	
-	entities.push_back(helix1);
+	// Cubes
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[0], materials[0]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[0], materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[0], materials[3]));
+	// Cylinders
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[1], materials[0]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[1], materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[1], materials[4]));
+	// Helixes
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[2], materials[0]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[2], materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[2], materials[5]));
+	// Spheres
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[3], materials[0]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[3], materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[3], materials[2]));	// Voronoi
+	// Toruses... Tori?
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[4], materials[0]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[4], materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[4], materials[5]));
+	// 1-sided Quad
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[5], materials[0]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[5], materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[5], materials[4]));
+	// 2-sided Quad
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[6], materials[0]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[6], materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[6], materials[3]));
 
-	/*
-	* Keeping the top hat commented out because I love it too much
-	// --------------------- TOP HAT ----------------------
-	// Vertices to create a top hat! It took a lot of fiddling
-	// with the index buffer before I really understood what I
-	// was doing, but I'm pretty satisfied with the result.
-	Vertex hatVertices[] =
+	// Move the entities around in trios
+	for (int i = 0; i < entities.size(); i+=3)
 	{
-		// Comment coordinates relative to x: 0-12, y: 0-14
-		// (I sketched this out on graph paper and just labeled points
-		// like this as I went. Would this have been much simpler if
-		// I just used x: 0-10 and y: 0-10? Yes.)
-		// Vertices for the brim:
-		{ XMFLOAT3(-0.5f, -.25f, +0.0f), grey },	// 0 -- (0, 3)
-		{ XMFLOAT3(-.43f, -.17f, +0.0f), grey },	// 1 -- (1, 4)
-		{ XMFLOAT3(-.43f, -.33f, +0.0f), grey },	// 2 -- (1, 2)
-		{ XMFLOAT3(-.36f, -.25f, +0.0f), grey },	// 3 -- (2, 3)
-		{ XMFLOAT3(-.29f, -.42f, +0.0f), grey },	// 4 -- (3, 1)
-		{ XMFLOAT3(-.214f, -.33f, +0.0f),darkGrey },// 5 -- (4, 2)
-		{ XMFLOAT3(-.071f, -0.5f, +0.0f), grey },	// 6 -- (6, 0)
-		{ XMFLOAT3(.214f, -.33f, +0.0f), darkGrey },// 7 -- (10, 2)
-		{ XMFLOAT3(.071f, -0.5f, +0.0f), grey },	// 8 -- (8, 0)
-		{ XMFLOAT3(.286f, -.42f, +0.0f), grey },	// 9 -- (11, 1)
-		{ XMFLOAT3(.357f, -.25f, +0.0f), grey },	// 10 - (12, 3)
-		{ XMFLOAT3(.429f, -.33f, +0.0f), grey },	// 11 - (13, 2)
-		{ XMFLOAT3(.429f, -.17f, +0.0f), grey },	// 12 - (13, 4)
-		{ XMFLOAT3(+0.5f, -.25f, +0.0f), grey },	// 13 - (14, 3)
-		// Vertices for the band:
-		{ XMFLOAT3(.286f, -.083f, +0.0f), darkGrey },// 14 - (11, 5)
-		{ XMFLOAT3(-.286f, -.083f,+0.0f), darkGrey },// 15 - (3, 5)
-		// Vertices for the top:
-		{ XMFLOAT3(.429f, +0.5f, +0.0f), grey },	// 16 - (13, 12)
-		{ XMFLOAT3(-.43f, +0.5f, +0.0f), grey },	// 17 - (1, 12)
-	};
-
-	// Vertices must be clockwise for triangle to face correctly
-	unsigned int hatIndices[] = {
-		0, 1, 2,		// Brim
-		2, 1, 3,
-		2, 3, 4,
-		4, 3, 5,
-		4, 5, 6,
-		6, 5, 7,
-		6, 7, 8,
-		8, 7, 9,
-		9, 7, 10,
-		9, 10, 11,
-		11, 10, 12,
-		11, 12, 13,
-		5, 14, 7,		// Band
-		5, 15, 14,
-		15, 16, 14,		// Top
-		15, 17, 16
-	};
-
-	// It looks fine, but I sort of wish the edges of the band
-	// were sharper. Either make a new mesh to draw over it, or
-	// maybe add some vertices in between?
-	meshes.push_back(std::make_shared<Mesh>(
-		hatVertices, ARRAYSIZE(hatVertices),
-		hatIndices, ARRAYSIZE(hatIndices),
-		"Top Hat"));
-	*/
+		// Move all three the same amount left or right,
+		// and each individually up or down
+		entities[i]->GetTransform()->MoveAbsolute(
+			(float)(i - 9), 3.0f, 0);
+		entities[i+1]->GetTransform()->MoveAbsolute(
+			(float)(i - 9), 0, 0);
+		entities[i+2]->GetTransform()->MoveAbsolute(
+			(float)(i - 9), -3.0f, 0);
+	}
 }
 
 
@@ -294,28 +307,10 @@ void Game::Update(float deltaTime, float totalTime)
 	BuildUI();
 
 	// --- Move game entities ---
-	/*
-	// Scale calculation taken from Demo code
-	float scale = (float)sin(totalTime * 5) * 0.5f + 1.0f;
-	
-	// Make this hat move like a jellyfish
-	entities[2].get()->GetTransform()->SetScale(1.5f-scale, scale, 1);
-	entities[2].get()->GetTransform()->
-		SetPosition(-0.5f, (float)sin(totalTime) * 0.5f, 0);
-
-	// Big hat rotates counterclockwise, small hat rotates clockwise
-	entities[0].get()->GetTransform()->Rotate(0, 0, deltaTime);
-	entities[1].get()->GetTransform()->Rotate(0, 0, -deltaTime);
-
-	// Small hat orbits around (0.5f, -0.5f)
-	entities[1].get()->GetTransform()->SetPosition(
-		0.5f + (float)cos(totalTime) * 0.1f,
-		-0.5f + (float)sin(totalTime) * 0.1f, 0);
-
-	// Quad and Tri each just move along the x and y axes respectively
-	entities[3].get()->GetTransform()->SetPosition((float)sin(totalTime), 0, 0);
-	entities[4].get()->GetTransform()->SetPosition(0, (float)sin(totalTime), 0);
-	*/
+	for (unsigned int i = 0; i < entities.size(); ++i)
+	{
+		entities[i]->GetTransform()->Rotate(0, deltaTime, 0);
+	}
 
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::KeyDown(VK_ESCAPE))

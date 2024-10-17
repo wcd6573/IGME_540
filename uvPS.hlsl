@@ -1,8 +1,7 @@
 /*
 William Duprey
-10/16/24
-Pixel Shader
-Modified from starter code provided by Prof. Chris Cascioli
+10/17/24
+UV Pixel Shader
 */
 
 // Buffer to pass data to this pixel shader,
@@ -26,25 +25,16 @@ struct VertexToPixel
 	//  |   Name          Semantic
 	//  |    |                |
 	//  v    v                v
-	float4 screenPosition	: SV_POSITION;
+    float4 screenPosition : SV_POSITION;
     float3 normal : NORMAL;
     float2 uv : TEXCOORD;
 };
 
 // --------------------------------------------------------
-// The entry point (main method) for our pixel shader
-// 
-// - Input is the data coming down the pipeline (defined by the struct)
-// - Output is a single color (float4)
-// - Has a special semantic (SV_TARGET), which means 
-//    "put the output of this into the current render target"
-// - Named "main" because that's the default the shader compiler looks for
+// Returns a color using the 2D uv coordinates,
+// the object will have a gradient from red to green
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	// Just return the input color
-	// - This color (like most values passing through the rasterizer) is 
-	//   interpolated for each pixel between the corresponding vertices 
-	//   of the triangle we're rendering
-    return colorTint;
+	return float4(input.uv, 0, 1);
 }

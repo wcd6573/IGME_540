@@ -34,8 +34,7 @@ public:
 private:
 
 	// Initialization helper methods - feel free to customize, combine, remove, etc.
-	void LoadShaders();
-	void CreateMaterials();
+	void LoadShadersAndCreateMaterials();
 	void CreateGeometry();
 
 	// ImGui helper methods
@@ -66,9 +65,5 @@ private:
 	// the actual process of binding, but I'm too
 	// tired to find it right now)
 	std::shared_ptr<Camera> activeCam;
-
-	// SimpleShader pointers for current shaders
-	std::shared_ptr<SimpleVertexShader> vertexShader;
-	std::shared_ptr<SimplePixelShader> pixelShader;
 };
 
