@@ -1,5 +1,5 @@
 // William Duprey
-// 10/3/24
+// 10/16/24
 // Game Class Implementation
 // Modified from starter code provided by Prof. Chris Cascioli
 
@@ -178,134 +178,6 @@ void Game::CreateMaterials()
 // --------------------------------------------------------
 void Game::CreateGeometry()
 {
-	// Create some temporary variables to represent colors
-	// - Not necessary, just makes things more readable
-	XMFLOAT4 red = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-	XMFLOAT4 green = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-	XMFLOAT4 blue = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
-	XMFLOAT4 white = XMFLOAT4(1, 1, 1, 1);
-	XMFLOAT4 black = XMFLOAT4(0, 0, 0, 1);
-	XMFLOAT4 darkGrey = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
-	XMFLOAT4 grey = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-
-	// Set up the vertices of the triangle we would like to draw
-	// - We're going to copy this array, exactly as it exists in CPU memory
-	//    over to a Direct3D-controlled data structure on the GPU (the vertex buffer)
-	// - Note: Since we don't have a camera or really any concept of
-	//    a "3d world" yet, we're simply describing positions within the
-	//    bounds of how the rasterizer sees our screen: [-1 to +1] on X and Y
-	// - This means (0,0) is at the very center of the screen.
-	// - These are known as "Normalized Device Coordinates" or "Homogeneous 
-	//    Screen Coords", which are ways to describe a position without
-	//    knowing the exact size (in pixels) of the image/window/etc.  
-	// - Long story short: Resizing the window also resizes the triangle,
-	//    since we're describing the triangle in terms of the window itself
-
-	// -------------------- TRIANGLE ----------------------
-	// Set up starter triangle vertices and indices
-	Vertex triVertices[] =
-	{
-		{ XMFLOAT3(+0.0f, +0.25f, +0.0f), red },
-		{ XMFLOAT3(+.25f, -0.25f, +0.0f), blue },
-		{ XMFLOAT3(-0.25f, -0.25f, +0.0f), green },
-	};
-
-	// Set up indices, which tell us which vertices to use and in which order
-	// - This is redundant for just 3 vertices, but will be more useful later
-	// - Indices are technically not required if the vertices are in the buffer 
-	//    in the correct order and each one will be used exactly once
-	// - But just to see how it's done...
-	unsigned int triIndices[] = { 0, 1, 2 };
-
-	// Add the default starter code triangle
-	meshes.push_back(std::make_shared<Mesh>(
-		triVertices, ARRAYSIZE(triVertices),
-		triIndices, ARRAYSIZE(triIndices),
-		"Starter Triangle"));
-
-	// --------------------- TOP HAT ----------------------
-	// Vertices to create a top hat! It took a lot of fiddling
-	// with the index buffer before I really understood what I
-	// was doing, but I'm pretty satisfied with the result.
-	Vertex hatVertices[] =
-	{
-		// Comment coordinates relative to x: 0-12, y: 0-14
-		// (I sketched this out on graph paper and just labeled points
-		// like this as I went. Would this have been much simpler if
-		// I just used x: 0-10 and y: 0-10? Yes.)
-		// Vertices for the brim:
-		{ XMFLOAT3(-0.5f, -.25f, +0.0f), grey },	// 0 -- (0, 3)
-		{ XMFLOAT3(-.43f, -.17f, +0.0f), grey },	// 1 -- (1, 4)
-		{ XMFLOAT3(-.43f, -.33f, +0.0f), grey },	// 2 -- (1, 2)
-		{ XMFLOAT3(-.36f, -.25f, +0.0f), grey },	// 3 -- (2, 3)
-		{ XMFLOAT3(-.29f, -.42f, +0.0f), grey },	// 4 -- (3, 1)
-		{ XMFLOAT3(-.214f, -.33f, +0.0f),darkGrey },// 5 -- (4, 2)
-		{ XMFLOAT3(-.071f, -0.5f, +0.0f), grey },	// 6 -- (6, 0)
-		{ XMFLOAT3(.214f, -.33f, +0.0f), darkGrey },// 7 -- (10, 2)
-		{ XMFLOAT3(.071f, -0.5f, +0.0f), grey },	// 8 -- (8, 0)
-		{ XMFLOAT3(.286f, -.42f, +0.0f), grey },	// 9 -- (11, 1)
-		{ XMFLOAT3(.357f, -.25f, +0.0f), grey },	// 10 - (12, 3)
-		{ XMFLOAT3(.429f, -.33f, +0.0f), grey },	// 11 - (13, 2)
-		{ XMFLOAT3(.429f, -.17f, +0.0f), grey },	// 12 - (13, 4)
-		{ XMFLOAT3(+0.5f, -.25f, +0.0f), grey },	// 13 - (14, 3)
-		// Vertices for the band:							
-		{ XMFLOAT3(.286f, -.083f, +0.0f), darkGrey },// 14 - (11, 5)
-		{ XMFLOAT3(-.286f, -.083f,+0.0f), darkGrey },// 15 - (3, 5)
-		// Vertices for the top:							
-		{ XMFLOAT3(.429f, +0.5f, +0.0f), grey },	// 16 - (13, 12)
-		{ XMFLOAT3(-.43f, +0.5f, +0.0f), grey },	// 17 - (1, 12)
-	};
-
-	// Vertices must be clockwise for triangle to face correctly
-	unsigned int hatIndices[] = {
-		0, 1, 2,		// Brim
-		2, 1, 3,
-		2, 3, 4,
-		4, 3, 5,
-		4, 5, 6,
-		6, 5, 7,
-		6, 7, 8,
-		8, 7, 9,
-		9, 7, 10,
-		9, 10, 11,
-		11, 10, 12,
-		11, 12, 13,
-		5, 14, 7,		// Band
-		5, 15, 14,
-		15, 16, 14,		// Top
-		15, 17, 16
-	};
-
-	// It looks fine, but I sort of wish the edges of the band
-	// were sharper. Either make a new mesh to draw over it, or 
-	// maybe add some vertices in between?
-	meshes.push_back(std::make_shared<Mesh>(
-		hatVertices, ARRAYSIZE(hatVertices),
-		hatIndices, ARRAYSIZE(hatIndices),
-		"Top Hat"));
-
-	// ---------------------- QUAD ------------------------
-	// Now for something comparatively simpler: a quadrilateral
-	Vertex quadVertices[] =
-	{
-		{XMFLOAT3(-.15f, +0.25f, 0), black},
-		{XMFLOAT3(0.25f, +0.25f, 0), grey},
-		{XMFLOAT3(-.25f, -0.25f, 0), white},
-		{XMFLOAT3(0.15f, -0.25f, 0), blue},
-	};
-
-	unsigned int quadIndices[] =
-	{
-		0, 1, 2,
-		1, 3, 2,
-	};
-
-	meshes.push_back(std::make_shared<Mesh>(
-		quadVertices, ARRAYSIZE(quadVertices),
-		quadIndices, ARRAYSIZE(quadIndices),
-		"Quad"));
-
-
 	// --------------- MAKE SOME ENTITIES -----------------
 	// Create shared pointers using the above meshes
 	std::shared_ptr<GameEntity> hat1 = std::make_shared<GameEntity>(
@@ -337,6 +209,70 @@ void Game::CreateGeometry()
 	entities.push_back(hat3);
 	entities.push_back(quad1);
 	entities.push_back(tri1);
+
+	/*
+	* Keeping the top hat commented out because I love it too much
+	// --------------------- TOP HAT ----------------------
+	// Vertices to create a top hat! It took a lot of fiddling
+	// with the index buffer before I really understood what I
+	// was doing, but I'm pretty satisfied with the result.
+	Vertex hatVertices[] =
+	{
+		// Comment coordinates relative to x: 0-12, y: 0-14
+		// (I sketched this out on graph paper and just labeled points
+		// like this as I went. Would this have been much simpler if
+		// I just used x: 0-10 and y: 0-10? Yes.)
+		// Vertices for the brim:
+		{ XMFLOAT3(-0.5f, -.25f, +0.0f), grey },	// 0 -- (0, 3)
+		{ XMFLOAT3(-.43f, -.17f, +0.0f), grey },	// 1 -- (1, 4)
+		{ XMFLOAT3(-.43f, -.33f, +0.0f), grey },	// 2 -- (1, 2)
+		{ XMFLOAT3(-.36f, -.25f, +0.0f), grey },	// 3 -- (2, 3)
+		{ XMFLOAT3(-.29f, -.42f, +0.0f), grey },	// 4 -- (3, 1)
+		{ XMFLOAT3(-.214f, -.33f, +0.0f),darkGrey },// 5 -- (4, 2)
+		{ XMFLOAT3(-.071f, -0.5f, +0.0f), grey },	// 6 -- (6, 0)
+		{ XMFLOAT3(.214f, -.33f, +0.0f), darkGrey },// 7 -- (10, 2)
+		{ XMFLOAT3(.071f, -0.5f, +0.0f), grey },	// 8 -- (8, 0)
+		{ XMFLOAT3(.286f, -.42f, +0.0f), grey },	// 9 -- (11, 1)
+		{ XMFLOAT3(.357f, -.25f, +0.0f), grey },	// 10 - (12, 3)
+		{ XMFLOAT3(.429f, -.33f, +0.0f), grey },	// 11 - (13, 2)
+		{ XMFLOAT3(.429f, -.17f, +0.0f), grey },	// 12 - (13, 4)
+		{ XMFLOAT3(+0.5f, -.25f, +0.0f), grey },	// 13 - (14, 3)
+		// Vertices for the band:
+		{ XMFLOAT3(.286f, -.083f, +0.0f), darkGrey },// 14 - (11, 5)
+		{ XMFLOAT3(-.286f, -.083f,+0.0f), darkGrey },// 15 - (3, 5)
+		// Vertices for the top:
+		{ XMFLOAT3(.429f, +0.5f, +0.0f), grey },	// 16 - (13, 12)
+		{ XMFLOAT3(-.43f, +0.5f, +0.0f), grey },	// 17 - (1, 12)
+	};
+
+	// Vertices must be clockwise for triangle to face correctly
+	unsigned int hatIndices[] = {
+		0, 1, 2,		// Brim
+		2, 1, 3,
+		2, 3, 4,
+		4, 3, 5,
+		4, 5, 6,
+		6, 5, 7,
+		6, 7, 8,
+		8, 7, 9,
+		9, 7, 10,
+		9, 10, 11,
+		11, 10, 12,
+		11, 12, 13,
+		5, 14, 7,		// Band
+		5, 15, 14,
+		15, 16, 14,		// Top
+		15, 17, 16
+	};
+
+	// It looks fine, but I sort of wish the edges of the band
+	// were sharper. Either make a new mesh to draw over it, or
+	// maybe add some vertices in between?
+	meshes.push_back(std::make_shared<Mesh>(
+		hatVertices, ARRAYSIZE(hatVertices),
+		hatIndices, ARRAYSIZE(hatIndices),
+		"Top Hat"));
+	*/
 }
 
 
