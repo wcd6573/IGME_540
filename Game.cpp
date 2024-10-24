@@ -73,7 +73,7 @@ void Game::Initialize()
 	bgColor[3] = 1.0f;	// Blue
 
 	// Set ambient color of light
-	ambientColor = XMFLOAT3(0.2f, 0.2f, 0.2f);
+	ambientColor = XMFLOAT3(0.1f, 0.1f, 0.25f);
 
 	// --- Create a bunch of cameras ---
 	// Standard, default camera
@@ -151,6 +151,12 @@ void Game::LoadShadersAndCreateMaterials()
 
 
 	// --- Create some Materials ---
+	// White color tint
+	materials.push_back(std::make_shared<Material>(
+		"White Tint",
+		XMFLOAT3(1.0f, 1.0f, 1.6f), 0.0f,
+		vertexShader,
+		pixelShader));
 	// Normal Shader
 	materials.push_back(std::make_shared<Material>(
 		"Normal",
@@ -169,30 +175,12 @@ void Game::LoadShadersAndCreateMaterials()
 		XMFLOAT3(1.0f, 1.0f, 1.0f), 0.0f,
 		vertexShader,
 		voronoi));
-	// Purple color tint
-	materials.push_back(std::make_shared<Material>(
-		"Purple Tint",
-		XMFLOAT3(0.7f, 0.0f, 0.6f), 0.25f,
-		vertexShader,
-		pixelShader));
-	// Grey color tint
-	materials.push_back(std::make_shared<Material>(
-		"Grey Tint",
-		XMFLOAT3(0.5f, 0.5f, 0.5f), 1.0f,
-		vertexShader,
-		pixelShader));
-	// Teal color tint
-	materials.push_back(std::make_shared<Material>(
-		"Teal Tint",
-		XMFLOAT3(0.0f, 0.7f, 0.7f), 0.5f,
-		vertexShader,
-		pixelShader));
-
+	
 	// --- Create Lights ---
 	Light directional1 = {};
 	directional1.Type = LIGHT_TYPE_DIRECTIONAL;
-	directional1.Direction = XMFLOAT3(1.0f, -1.0f, 0.0f);
-	directional1.Color = XMFLOAT3(0.2f, 0.2f, 1.0f);
+	directional1.Direction = XMFLOAT3(1.0f, 0.0f, 0.0f);
+	directional1.Color = XMFLOAT3(1.0f, 0.0f, 0.0f);
 	directional1.Intensity = 1.0f;
 
 	lights.push_back(directional1);
@@ -230,65 +218,33 @@ void Game::CreateGeometry()
 	// Cubes
 	entities.push_back(std::make_shared<GameEntity>(
 		meshes[0], materials[0]));
-	entities.push_back(std::make_shared<GameEntity>(
-		meshes[0], materials[1]));
-	entities.push_back(std::make_shared<GameEntity>(
-		meshes[0], materials[2]));
 	// Cylinders
 	entities.push_back(std::make_shared<GameEntity>(
 		meshes[1], materials[0]));
-	entities.push_back(std::make_shared<GameEntity>(
-		meshes[1], materials[1]));
-	entities.push_back(std::make_shared<GameEntity>(
-		meshes[1], materials[4]));
 	// Helixes
 	entities.push_back(std::make_shared<GameEntity>(
 		meshes[2], materials[0]));
-	entities.push_back(std::make_shared<GameEntity>(
-		meshes[2], materials[1]));
-	entities.push_back(std::make_shared<GameEntity>(
-		meshes[2], materials[5]));
 	// Spheres
 	entities.push_back(std::make_shared<GameEntity>(
 		meshes[3], materials[0]));
-	entities.push_back(std::make_shared<GameEntity>(
-		meshes[3], materials[1]));
-	entities.push_back(std::make_shared<GameEntity>(
-		meshes[3], materials[2]));
 	// Toruses... Tori?
 	entities.push_back(std::make_shared<GameEntity>(
 		meshes[4], materials[0]));
-	entities.push_back(std::make_shared<GameEntity>(
-		meshes[4], materials[1]));
-	entities.push_back(std::make_shared<GameEntity>(
-		meshes[4], materials[5]));
 	// 1-sided Quad
 	entities.push_back(std::make_shared<GameEntity>(
 		meshes[5], materials[0]));
-	entities.push_back(std::make_shared<GameEntity>(
-		meshes[5], materials[1]));
-	entities.push_back(std::make_shared<GameEntity>(
-		meshes[5], materials[4]));
 	// 2-sided Quad
 	entities.push_back(std::make_shared<GameEntity>(
 		meshes[6], materials[0]));
-	entities.push_back(std::make_shared<GameEntity>(
-		meshes[6], materials[1]));
-	entities.push_back(std::make_shared<GameEntity>(
-		meshes[6], materials[3]));
 
-	// Move the entities around in trios
-	for (int i = 0; i < entities.size(); i+=3)
-	{
-		// Move all three the same amount left or right,
-		// and each individually up or down
-		entities[i]->GetTransform()->MoveAbsolute(
-			(float)(i - 9), 3.0f, 0);
-		entities[i+1]->GetTransform()->MoveAbsolute(
-			(float)(i - 9), 0, 0);
-		entities[i+2]->GetTransform()->MoveAbsolute(
-			(float)(i - 9), -3.0f, 0);
-	}
+	// Move those entities
+	entities[0]->GetTransform()->MoveAbsolute(-9, 0, 0);
+	entities[1]->GetTransform()->MoveAbsolute(-6, 0, 0);
+	entities[2]->GetTransform()->MoveAbsolute(-3, 0, 0);
+	entities[3]->GetTransform()->MoveAbsolute(0, 0, 0);
+	entities[4]->GetTransform()->MoveAbsolute(3, 0, 0);
+	entities[5]->GetTransform()->MoveAbsolute(6, 0, 0);
+	entities[6]->GetTransform()->MoveAbsolute(9, 0, 0);
 }
 
 

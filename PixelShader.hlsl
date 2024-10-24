@@ -37,5 +37,12 @@ float4 main(VertexToPixel input) : SV_TARGET
     // across the face of triangles, making them not unit vectors
     input.normal = normalize(input.normal);
 
-    return float4(ambientColor * colorTint, 1);
+    // Calculate ambient light with simple multiplication
+    float3 ambientLight = ambientColor * colorTint;
+    
+    // Calculate diffuse light using helper functions
+    float3 diffuseLight = calculateDiffuse(
+        colorTint, input.normal, directionalLight1);
+    
+    return float4(ambientLight + diffuseLight, 1);
 }

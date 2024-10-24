@@ -15,7 +15,6 @@ Shader Lighting Header
 #define LIGHT_TYPE_POINT		1
 #define LIGHT_TYPE_SPOT			2
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // --------------------------------- STRUCTS -------------------------------- //
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,5 +36,14 @@ struct Light
     float2 Padding; // Pad to hit the 16-byte boundary
 };
 
+////////////////////////////////////////////////////////////////////////////////
+// --------------------------- HELPER FUNCTIONS ----------------------------- //
+////////////////////////////////////////////////////////////////////////////////
+float3 calculateDiffuse(float3 color, float3 normal, Light light)
+{
+    return saturate(dot(normal, -light.Direction)) * // Diffuse intensity, clamped to 0-1
+        light.Color * light.Intensity *              // Light's overall color
+        color;                                       // Tinted by surface color
+}
 
 #endif
