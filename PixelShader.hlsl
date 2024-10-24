@@ -6,6 +6,7 @@ Modified from starter code provided by Prof. Chris Cascioli
 */
 
 #include "ShaderIncludes.hlsli"
+#include "Lighting.hlsli"
 
 // Buffer to pass data to this pixel shader,
 // needs roughness and color tint
@@ -15,9 +16,10 @@ cbuffer ExternalData : register(b0)
 {
     float roughness;
     float3 colorTint;
-    //float padding;    Unnecessary due to simple shader?
     float3 cameraPosition;
     float3 ambientColor;
+    
+    Light directionalLight1;
 }
 
 // --------------------------------------------------------
