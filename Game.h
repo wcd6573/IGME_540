@@ -50,6 +50,7 @@ private:
 	// Variables used to change the constant buffer struct using ImGui
 	std::shared_ptr<float[]> offset;
 	std::shared_ptr<float[]> colorTint;
+	DirectX::XMFLOAT3 ambientColor;
 
 	// Vectors of shared pointers to easily loop through these elements
 	std::vector<std::shared_ptr<Mesh>> meshes;

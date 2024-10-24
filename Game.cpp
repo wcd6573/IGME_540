@@ -83,6 +83,9 @@ void Game::Initialize()
 	offset[1] = -0.10f;
 	offset[2] = 0.0f;
 
+	// Set ambient color of light
+	ambientColor = XMFLOAT3(0.2f, 0.2f, 0.2f);
+
 	// --- Create a bunch of cameras ---
 	// Standard, default camera
 	cameras.push_back(std::make_shared<Camera>(
@@ -349,7 +352,9 @@ void Game::Draw(float deltaTime, float totalTime)
 	for (int i = 0; i < entities.size(); ++i)
 	{
 		// Set a time value (if there is one)
-		entities[i]->GetMaterial()->GetPixelShader()->SetFloat("time", totalTime);
+		std::shared_ptr<SimplePixelShader> ps = entities[i]->GetMaterial()->GetPixelShader();
+		ps->SetFloat("time", totalTime);
+		ps->SetFloat3("ambientColor", ambientColor);
 		
 		entities[i]->Draw(activeCam);
 	}
