@@ -37,12 +37,22 @@ float4 main(VertexToPixel input) : SV_TARGET
     // across the face of triangles, making them not unit vectors
     input.normal = normalize(input.normal);
 
-    // Calculate ambient light with simple multiplication
+    // --- Ambient ---
     float3 ambientLight = ambientColor * colorTint;
     
-    // Calculate diffuse light using helper functions
+    // --- Diffuse ---
     float3 diffuseLight = calculateDiffuse(
         colorTint, input.normal, directionalLight1);
     
-    return float4(ambientLight + diffuseLight, 1);
+    // --- Specular ---
+    // Calculate values that are the same for each light
+    float3 viewVec = normalize(cameraPosition - input.worldPosition);
+    float specExponent = (1.0f - roughness) * MAX_SPECULAR_EXPONENT;
+    
+    // Call helper function for each Light
+    float3 specularLight = calculateSpecular(input.normal, viewVec,
+        specExponent, colorTint, directionalLight1);
+    
+    // Sum up all the light, and return it
+    return float4(ambientLight + diffuseLight + specularLight, 1);
 }

@@ -39,11 +39,24 @@ struct Light
 ////////////////////////////////////////////////////////////////////////////////
 // --------------------------- HELPER FUNCTIONS ----------------------------- //
 ////////////////////////////////////////////////////////////////////////////////
-float3 calculateDiffuse(float3 color, float3 normal, Light light)
+float3 calculateDiffuse(float3 color, float3 normal, 
+    Light light)
 {
     return saturate(dot(normal, -light.Direction)) * // Diffuse intensity, clamped to 0-1
         light.Color * light.Intensity *              // Light's overall color
         color;                                       // Tinted by surface color
+}
+
+float3 calculateSpecular(float3 normal, float3 viewVec, 
+    float specExp, float3 color, Light light)
+{
+    // Calculate perfect reflection vector
+    float3 reflVec = reflect(light.Direction, normal);
+
+    // Return final calculated light
+    return pow(saturate(dot(reflVec, viewVec)), specExp) * // Phong shading calculation
+        light.Color * light.Intensity *                    // Colored by light's color
+        color;                                             // Tinted by surface color
 }
 
 #endif
