@@ -8,12 +8,14 @@ Modified from starter code provided by Prof. Chris Cascioli
 #include "ShaderIncludes.hlsli"
 
 // Buffer to pass data to this pixel shader,
-// only needs a color tint
+// needs roughness and color tint
 // Also, each type of shader has its own registers,
 // so there's no problem using b0 here too
 cbuffer ExternalData : register(b0)
 {
-    float4 colorTint;
+    float roughness;
+    float3 colorTint;
+    float3 cameraPosition;
 }
 
 // --------------------------------------------------------
@@ -31,5 +33,5 @@ float4 main(VertexToPixel input) : SV_TARGET
     // - This color (like most values passing through the rasterizer) is 
     //   interpolated for each pixel between the corresponding vertices 
     //   of the triangle we're rendering
-    return colorTint;
+    return float4(colorTint, 1);
 }

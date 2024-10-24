@@ -1,6 +1,6 @@
 /*
 William Duprey
-10/15/24
+10/24/24
 Material Class Implementation
 */
 
@@ -14,10 +14,13 @@ using namespace DirectX;
 // Constructor for a Material. Sets up its fields,
 // as constructors often do. Uses an initializer list.
 // --------------------------------------------------------
-Material::Material(XMFLOAT4 _colorTint, 
+Material::Material(const char* _name,
+	XMFLOAT3 _colorTint, float _roughness,
 	std::shared_ptr<SimpleVertexShader> _vs, 
 	std::shared_ptr<SimplePixelShader> _ps)
-	: colorTint(_colorTint),
+	: name(_name),
+	  colorTint(_colorTint),
+	  roughness(_roughness),
 	  vs(_vs),
 	  ps(_ps)
 {
@@ -26,13 +29,16 @@ Material::Material(XMFLOAT4 _colorTint,
 ///////////////////////////////////////////////////////////////////////////////
 // ------------------------------- GETTERS --------------------------------- //
 ///////////////////////////////////////////////////////////////////////////////
-DirectX::XMFLOAT4 Material::GetColorTint() { return colorTint; }
+const char* Material::GetName() { return name; }
+DirectX::XMFLOAT3 Material::GetColorTint() { return colorTint; }
+float Material::GetRoughness() { return roughness; }
 std::shared_ptr<SimpleVertexShader> Material::GetVertexShader() { return vs; }
 std::shared_ptr<SimplePixelShader> Material::GetPixelShader() { return ps; }
 
 ///////////////////////////////////////////////////////////////////////////////
 // ------------------------------- SETTERS --------------------------------- //
 ///////////////////////////////////////////////////////////////////////////////
-void Material::SetColorTint(XMFLOAT4 _colorTint) { colorTint = _colorTint; }
+void Material::SetColorTint(XMFLOAT3 _colorTint) { colorTint = _colorTint; }
+void Material::SetRoughness(float _roughness) { roughness = _roughness; }
 void Material::SetVertexShader(std::shared_ptr<SimpleVertexShader> _vs) { vs = _vs; }
 void Material::SetPixelShader(std::shared_ptr<SimplePixelShader> _ps) { ps = _ps; }

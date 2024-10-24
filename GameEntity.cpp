@@ -65,8 +65,10 @@ void GameEntity::Draw(std::shared_ptr<Camera> camera)
 	// Copy data to the GPU
 	vs->CopyAllBufferData();
 
-	// Do the same for the pixel shader (only needs color tint)
-	ps->SetFloat4("colorTint", material->GetColorTint());
+	// Do the same for the pixel shader
+	ps->SetFloat3("colorTint", material->GetColorTint());
+	ps->SetFloat("roughness", material->GetRoughness());
+	ps->SetFloat3("cameraPosition", camera->GetTransform()->GetPosition());
 	ps->CopyAllBufferData();
 
 	// Finally, call the mesh draw method

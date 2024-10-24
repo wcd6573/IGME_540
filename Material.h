@@ -1,6 +1,6 @@
 /*
 William Duprey
-10/15/24
+10/24/24
 Material Class Header
 */
 
@@ -20,22 +20,28 @@ class Material
 {
 public:
 	// Constructor
-	Material(DirectX::XMFLOAT4 _colorTint, 
+	Material(const char* _name, 
+		DirectX::XMFLOAT3 _colorTint, float _roughness,
 		std::shared_ptr<SimpleVertexShader> _vs,
 		std::shared_ptr<SimplePixelShader> _ps);
 
 	// Getters
-	DirectX::XMFLOAT4 GetColorTint();
+	const char* GetName();
+	DirectX::XMFLOAT3 GetColorTint();
+	float GetRoughness();
 	std::shared_ptr<SimpleVertexShader> GetVertexShader();
 	std::shared_ptr<SimplePixelShader> GetPixelShader();
 
 	// Setters
-	void SetColorTint(DirectX::XMFLOAT4 _colorTint);
+	void SetColorTint(DirectX::XMFLOAT3 _colorTint);
+	void SetRoughness(float _roughness);
 	void SetVertexShader(std::shared_ptr<SimpleVertexShader> _vs);
 	void SetPixelShader(std::shared_ptr<SimplePixelShader> _ps);
 
 private:
-	DirectX::XMFLOAT4 colorTint;
+	const char* name;
+	DirectX::XMFLOAT3 colorTint;
+	float roughness;
 	std::shared_ptr<SimpleVertexShader> vs;
 	std::shared_ptr<SimplePixelShader> ps;
 };

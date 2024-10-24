@@ -12,7 +12,7 @@ Normal Pixel Shader
 // so there's no problem using b0 here too
 cbuffer ExternalData : register(b0)
 {
-    float4 colorTint;
+    float3 colorTint;
 }
 
 // --------------------------------------------------------

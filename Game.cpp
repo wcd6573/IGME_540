@@ -161,32 +161,38 @@ void Game::LoadShadersAndCreateMaterials()
 	// --- Create some Materials ---
 	// Normal Shader
 	materials.push_back(std::make_shared<Material>(
-		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		"Normal",
+		XMFLOAT3(1.0f, 1.0f, 1.0f), 0.5f,
 		vertexShader,
 		normalPS));
 	// UV Shader
 	materials.push_back(std::make_shared<Material>(
-		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		"UV",
+		XMFLOAT3(1.0f, 1.0f, 1.0f), 0.75f,
 		vertexShader,
 		uvPS));
 	// Voronoi Shader
 	materials.push_back(std::make_shared<Material>(
-		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		"Voronoi",
+		XMFLOAT3(1.0f, 1.0f, 1.0f), 0.0f,
 		vertexShader,
 		voronoi));
 	// Purple color tint
 	materials.push_back(std::make_shared<Material>(
-		XMFLOAT4(0.7f, 0.0f, 0.6f, 1.0f),
+		"Purple Tint",
+		XMFLOAT3(0.7f, 0.0f, 0.6f), 0.25f,
 		vertexShader,
 		pixelShader));
 	// Grey color tint
 	materials.push_back(std::make_shared<Material>(
-		XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f),
+		"Grey Tint",
+		XMFLOAT3(0.5f, 0.5f, 0.5f), 1.0f,
 		vertexShader,
 		pixelShader));
 	// Teal color tint
 	materials.push_back(std::make_shared<Material>(
-		XMFLOAT4(0.0f, 0.7f, 0.7f, 1.0f),
+		"Teal Tint",
+		XMFLOAT3(0.0f, 0.7f, 0.7f), 0.5f,
 		vertexShader,
 		pixelShader));
 }
@@ -467,6 +473,8 @@ void Game::BuildUI()
 				// Info for the entity's mesh
 				ImGui::Text("Mesh: %s",
 					entities[i].get()->GetMesh().get()->GetName());
+				ImGui::Text("Material: %s",
+					entities[i]->GetMaterial()->GetName());
 				ImGui::Spacing();
 
 				// Get pointer to transform and each field of it

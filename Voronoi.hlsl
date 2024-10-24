@@ -21,7 +21,7 @@ by Patricio Gonzales Vivo and Jen Lowe
 // Pass time in to control the angle offset of the pattern
 cbuffer ExternalData : register(b0)
 {
-    float4 colorTint;
+    float3 colorTint;
     float time;
 }
 
