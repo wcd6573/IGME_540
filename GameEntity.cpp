@@ -59,6 +59,7 @@ void GameEntity::Draw(std::shared_ptr<Camera> camera)
 
 	// Strings must exactly match variable names in shader cbuffer
 	vs->SetMatrix4x4("world", transform.GetWorldMatrix());
+	vs->SetMatrix4x4("worldInvTranspose", transform.GetWorldInverseTransposeMatrix());
 	vs->SetMatrix4x4("view", camera->GetViewMatrix());
 	vs->SetMatrix4x4("projection", camera->GetProjectionMatrix());
 	

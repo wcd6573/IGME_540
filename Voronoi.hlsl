@@ -38,8 +38,8 @@ float4 main(VertexToPixel input) : SV_TARGET
     float cellDensity = 1.5f;
 
     // Tile the space based on the cell density
-    float3 g = floor(input.position * cellDensity);
-    float3 f = frac(input.position * cellDensity);
+    float3 g = floor(input.worldPosition * cellDensity);
+    float3 f = frac(input.worldPosition * cellDensity);
 
     // Track the closest distance, used to color the pixel
     float minDist = 1.0f;

@@ -31,9 +31,9 @@ cbuffer ExternalData : register(b0)
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-    // Just return the input color
-    // - This color (like most values passing through the rasterizer) is 
-    //   interpolated for each pixel between the corresponding vertices 
-    //   of the triangle we're rendering
+    // Gotta normalize those normals, since they get interpolated
+    // across the face of triangles, making them not unit vectors
+    input.normal = normalize(input.normal);
+
     return float4(ambientColor * colorTint, 1);
 }
