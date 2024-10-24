@@ -15,7 +15,7 @@ cbuffer ExternalData : register(b0)
 {
     float roughness;
     float3 colorTint;
-    float padding;
+    //float padding;    Unnecessary due to simple shader?
     float3 cameraPosition;
     float3 ambientColor;
 }

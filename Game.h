@@ -14,6 +14,7 @@
 #include "GameEntity.h"
 #include "Camera.h"
 #include "Material.h"
+#include "Lights.h"
 #include "SimpleShader.h"
 
 class Game
@@ -46,17 +47,14 @@ private:
 
 	// 4-element array of floats for holding the background color
 	std::shared_ptr<float[]> bgColor;
-
-	// Variables used to change the constant buffer struct using ImGui
-	std::shared_ptr<float[]> offset;
-	std::shared_ptr<float[]> colorTint;
-	DirectX::XMFLOAT3 ambientColor;
-
+	
 	// Vectors of shared pointers to easily loop through these elements
 	std::vector<std::shared_ptr<Mesh>> meshes;
 	std::vector<std::shared_ptr<GameEntity>> entities;
 	std::vector<std::shared_ptr<Camera>> cameras;
 	std::vector<std::shared_ptr<Material>> materials;
+	std::vector<Light> lights;
+	DirectX::XMFLOAT3 ambientColor;
 
 	// One camera to rule them all
 	// One camera to find them		

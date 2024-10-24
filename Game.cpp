@@ -72,17 +72,6 @@ void Game::Initialize()
 	bgColor[2] = 0.75f;	// Flower
 	bgColor[3] = 1.0f;	// Blue
 
-	// Set some initial values for the constant buffer struct
-	colorTint = std::make_shared<float[]>(4);
-	colorTint[0] = 0.5f;
-	colorTint[1] = 0.5f;
-	colorTint[2] = 1.0f;
-	colorTint[3] = 1.0f;
-	offset = std::make_shared<float[]>(3);
-	offset[0] = -0.25f;
-	offset[1] = -0.10f;
-	offset[2] = 0.0f;
-
 	// Set ambient color of light
 	ambientColor = XMFLOAT3(0.2f, 0.2f, 0.2f);
 
@@ -198,6 +187,15 @@ void Game::LoadShadersAndCreateMaterials()
 		XMFLOAT3(0.0f, 0.7f, 0.7f), 0.5f,
 		vertexShader,
 		pixelShader));
+
+	// --- Create Lights ---
+	Light directional1 = {};
+	directional1.Type = LIGHT_TYPE_DIRECTIONAL;
+	directional1.Direction = XMFLOAT3(1.0f, -1.0f, 0.0f);
+	directional1.Color = XMFLOAT3(0.2f, 0.2f, 1.0f);
+	directional1.Intensity = 1.0f;
+
+	lights.push_back(directional1);
 }
 
 // --------------------------------------------------------
@@ -355,7 +353,8 @@ void Game::Draw(float deltaTime, float totalTime)
 		std::shared_ptr<SimplePixelShader> ps = entities[i]->GetMaterial()->GetPixelShader();
 		ps->SetFloat("time", totalTime);
 		ps->SetFloat3("ambientColor", ambientColor);
-		
+		ps->SetData("directionalLight1", &lights[0], sizeof(Light));
+
 		entities[i]->Draw(activeCam);
 	}
 
