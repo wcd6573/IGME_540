@@ -16,53 +16,13 @@ to better understand Voronoi: https://thebookofshaders.com/12/
 by Patricio Gonzales Vivo and Jen Lowe
 */
 
+#include "ShaderIncludes.hlsli"
+
 // Pass time in to control the angle offset of the pattern
 cbuffer ExternalData : register(b0)
 {
     float4 colorTint;
     float time;
-}
-
-// Struct representing the data we expect to receive from earlier pipeline stages
-// - Should match the output of our corresponding vertex shader
-// - The name of the struct itself is unimportant
-// - The variable names don't have to match other shaders (just the semantics)
-// - Each variable must have a semantic, which defines its usage
-struct VertexToPixel
-{
-    // Data type
-    //  |
-    //  |   Name          Semantic
-    //  |    |                |
-    //  v    v                v
-    float4 screenPosition : SV_POSITION;
-    float3 normal : NORMAL;
-    float2 uv : TEXCOORD;
-    float3 position : POSITION;
-};
-
-// --------------------------------------------------------
-// Performs a bunch of arbitrary steps 
-// to produce a deterministically random float3.
-// --------------------------------------------------------
-inline float3 random_float3(float3 pos, float offset)
-{
-    // 3x3 matrix of arbitrary values
-    float3x3 m = float3x3(
-        15.27f, 47.63f, 99.41f,
-        89.98f, 95.07f, 38.39f,
-        33.83f, 51.06f, 60.77f
-    );
-    
-    // Do some arbitrary, random steps
-    pos = frac(sin(mul(pos, m)) * 46839.32f);
-
-    // Make a new float3, scaled by angle offset
-    return float3(
-        sin(pos.x * offset) * 0.5f + 0.5f,
-        cos(pos.y * offset) * 0.5f + 0.5f,
-        sin(pos.z * offset) * 0.5f + 0.5f
-    );
 }
 
 // --------------------------------------------------------
