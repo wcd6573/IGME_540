@@ -8,10 +8,11 @@ Modified from starter code provided by Prof. Chris Cascioli
 #include "ShaderIncludes.hlsli"
 #include "Lighting.hlsli"
 
+#define NUM_LIGHTS 6
+
 // Buffer to pass data to this pixel shader,
-// needs roughness and color tint
-// Also, each type of shader has its own registers,
-// so there's no problem using b0 here too
+// needs roughness, color tint, camera position,
+// and ambient light color, all for lighting calculations
 cbuffer ExternalData : register(b0)
 {
     float roughness;
@@ -19,7 +20,7 @@ cbuffer ExternalData : register(b0)
     float3 cameraPosition;
     float3 ambientColor;
     
-    Light directionalLight1;
+    Light lights[NUM_LIGHTS];
 }
 
 // --------------------------------------------------------
@@ -38,21 +39,30 @@ float4 main(VertexToPixel input) : SV_TARGET
     input.normal = normalize(input.normal);
 
     // --- Ambient ---
-    float3 ambientLight = ambientColor * colorTint;
+    float3 totalLight = ambientColor * colorTint;
     
-    // --- Diffuse ---
-    float3 diffuseLight = calculateDiffuse(
-        colorTint, input.normal, directionalLight1);
-    
-    // --- Specular ---
-    // Calculate values that are the same for each light
-    float3 viewVec = normalize(cameraPosition - input.worldPosition);
-    float specExponent = (1.0f - roughness) * MAX_SPECULAR_EXPONENT;
-    
-    // Call helper function for each Light
-    float3 specularLight = calculateSpecular(input.normal, viewVec,
-        specExponent, colorTint, directionalLight1);
+    // Loop through lights
+    for (int i = 0; i < NUM_LIGHTS; i++)
+    {
+        Light light = lights[i];
+        light.Direction = normalize(light.Direction);
+        
+        switch (light.Type)
+        {
+            case LIGHT_TYPE_DIRECTIONAL:
+                totalLight += directionalLight(light, colorTint, input.normal,
+                    cameraPosition, input.worldPosition, roughness);
+                break;
+            case LIGHT_TYPE_POINT:
+                totalLight += pointLight(light, colorTint, input.normal,
+                    cameraPosition, input.worldPosition, roughness);
+                break;
+            case LIGHT_TYPE_SPOT:
+                // Unimplemented
+                break;
+        }
+    }
     
     // Sum up all the light, and return it
-    return float4(ambientLight + diffuseLight + specularLight, 1);
+    return float4(totalLight, 1);
 }

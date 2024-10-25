@@ -37,26 +37,71 @@ struct Light
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// --------------------------- HELPER FUNCTIONS ----------------------------- //
+// -------------------------- LIGHT CALCULATIONS ---------------------------- //
 ////////////////////////////////////////////////////////////////////////////////
-float3 calculateDiffuse(float3 color, float3 normal, 
-    Light light)
+float3 calculateDiffuse(float3 normal, float3 toLight)
 {
-    return saturate(dot(normal, -light.Direction)) * // Diffuse intensity, clamped to 0-1
-        light.Color * light.Intensity *              // Light's overall color
-        color;                                       // Tinted by surface color
+    return saturate(dot(normal, toLight));
 }
 
-float3 calculateSpecular(float3 normal, float3 viewVec, 
-    float specExp, float3 color, Light light)
+float3 calculateSpecular(float3 normal, float3 toLight,
+    float3 toCam, float roughness)
 {
     // Calculate perfect reflection vector
-    float3 reflVec = reflect(light.Direction, normal);
+    float3 reflVec = reflect(-toLight, normal);
+    float specExp = (1.0f - roughness) * MAX_SPECULAR_EXPONENT;
 
+    
     // Return final calculated light
-    return pow(saturate(dot(reflVec, viewVec)), specExp) * // Phong shading calculation
-        light.Color * light.Intensity *                    // Colored by light's color
-        color;                                             // Tinted by surface color
+    return pow(saturate(dot(toCam, reflVec)), specExp);
+}
+
+// Attenuation function with non-linear falloff, and
+// returns 0 when outside the light's range
+float attenuate(Light light, float3 worldPos)
+{
+    float dist = distance(light.Position, worldPos);
+    float att = saturate(1.0f - (dist * dist / (light.Range * light.Range)));
+    return att * att;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ----------------------------- LIGHT TYPES -------------------------------- //
+////////////////////////////////////////////////////////////////////////////////
+float3 directionalLight(Light light, float3 color, float3 normal, 
+    float3 cameraPos, float3 worldPos, float roughness)
+{
+    // --- Diffuse ---
+    float3 toLight = normalize(-light.Direction);
+    float3 diffuse = calculateDiffuse(normal, toLight);
+    
+    // --- Specular ---
+    // Calculate vector from camera to pixel
+    float3 toCam = normalize(cameraPos - worldPos);
+    float3 specular = calculateSpecular(normal, toLight, toCam, roughness);
+    
+    // Combine light and return
+    // Multiple specular by color? No right answer
+    return ((diffuse * color) + specular) * 
+        light.Intensity * light.Color;
+}
+
+float3 pointLight(Light light, float3 color, float3 normal,
+    float3 cameraPos, float3 worldPos, float roughness)
+{
+    // --- Diffuse ---
+    // Point lights have no direction, so calculate one
+    // based on the world position and light's position
+    float3 toLight = normalize(light.Position - worldPos);
+    float3 diffuse = calculateDiffuse(normal, toLight);
+    
+    // --- Specular ---
+    float3 toCam = normalize(cameraPos - worldPos);
+    float3 specular = calculateSpecular(normal, toLight, toCam, roughness);
+
+    // Combine light, scale by attenuation, and return
+    return ((diffuse * color) + specular) *
+        light.Intensity * light.Color * attenuate(light, worldPos);
 }
 
 #endif

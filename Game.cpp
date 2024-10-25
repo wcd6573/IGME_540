@@ -151,10 +151,16 @@ void Game::LoadShadersAndCreateMaterials()
 
 
 	// --- Create some Materials ---
-	// White color tint
+	// White, metallic
 	materials.push_back(std::make_shared<Material>(
-		"White Tint",
-		XMFLOAT3(1.0f, 1.0f, 1.6f), 0.0f,
+		"White Metallic",
+		XMFLOAT3(1.0f, 1.0f, 1.0f), 0.02f,
+		vertexShader,
+		pixelShader));
+	// White, matte
+	materials.push_back(std::make_shared<Material>(
+		"White Matte",
+		XMFLOAT3(1.0f, 1.0f, 1.0f), 0.98f,
 		vertexShader,
 		pixelShader));
 	// Normal Shader
@@ -183,7 +189,48 @@ void Game::LoadShadersAndCreateMaterials()
 	directional1.Color = XMFLOAT3(1.0f, 0.0f, 0.0f);
 	directional1.Intensity = 1.0f;
 
+	Light directional2 = {};
+	directional2.Type = LIGHT_TYPE_DIRECTIONAL;
+	directional2.Direction = XMFLOAT3(0.0f, -1.0f, 0.0f);
+	directional2.Color = XMFLOAT3(0.0f, 1.0f, 0.0f);
+	directional2.Intensity = 1.0f;
+
+	Light directional3 = {};
+	directional3.Type = LIGHT_TYPE_DIRECTIONAL;
+	directional3.Direction = XMFLOAT3(-1.0f, 1.0f, -0.5f);
+	directional3.Color = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	directional3.Intensity = 1.0f;
+
+	Light point1 = {};
+	point1.Type = LIGHT_TYPE_POINT;
+	point1.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
+	point1.Intensity = 1.0f;
+	point1.Position = XMFLOAT3(-1.5f, 0, 0);
+	point1.Range = 10.0f;
+
+	Light point2 = {};
+	point2.Type = LIGHT_TYPE_POINT;
+	point2.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
+	point2.Intensity = 0.5f;
+	point2.Position = XMFLOAT3(1.5f, 0, 0);
+	point2.Range = 10.0f;
+
 	lights.push_back(directional1);
+	lights.push_back(directional2);
+	lights.push_back(directional3);
+	lights.push_back(point1);
+	lights.push_back(point2);
+
+	// Normalize directions for everything other than point lights
+	for (int i = 0; i < lights.size(); i++) 
+	{
+		if (lights[i].Type != LIGHT_TYPE_POINT) {
+			XMStoreFloat3(
+				&lights[i].Direction,
+				XMVector3Normalize(XMLoadFloat3(&lights[i].Direction))
+			);
+		}
+	}
 }
 
 // --------------------------------------------------------
@@ -212,8 +259,8 @@ void Game::CreateGeometry()
 		FixPath("../../Assets/Models/quad_double_sided.obj").c_str()));
 
 	// --- Create a bunch of entities ---
-	// Create three entities using each mesh
-	// 1st uses normal, 2nd uses UV, 3rd uses tint or fancy
+	// Create two entities using each mesh
+	// First set uses shiny material, second uses matte
 	
 	// Cubes
 	entities.push_back(std::make_shared<GameEntity>(
@@ -236,8 +283,24 @@ void Game::CreateGeometry()
 	// 2-sided Quad
 	entities.push_back(std::make_shared<GameEntity>(
 		meshes[6], materials[0]));
+	// Second set of entities
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[0], materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[1], materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[2], materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[3], materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[4], materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[5], materials[1]));
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[6], materials[1]));
 
-	// Move those entities
+	// Move those entities, copying the positions from
+	// the demo code to more easily verify my lights work
 	entities[0]->GetTransform()->MoveAbsolute(-9, 0, 0);
 	entities[1]->GetTransform()->MoveAbsolute(-6, 0, 0);
 	entities[2]->GetTransform()->MoveAbsolute(-3, 0, 0);
@@ -245,6 +308,13 @@ void Game::CreateGeometry()
 	entities[4]->GetTransform()->MoveAbsolute(3, 0, 0);
 	entities[5]->GetTransform()->MoveAbsolute(6, 0, 0);
 	entities[6]->GetTransform()->MoveAbsolute(9, 0, 0);
+	entities[7]->GetTransform()->MoveAbsolute(-9, 3, 0);
+	entities[8]->GetTransform()->MoveAbsolute(-6, 3, 0);
+	entities[9]->GetTransform()->MoveAbsolute(-3, 3, 0);
+	entities[10]->GetTransform()->MoveAbsolute(0, 3, 0);
+	entities[11]->GetTransform()->MoveAbsolute(3, 3, 0);
+	entities[12]->GetTransform()->MoveAbsolute(6, 3, 0);
+	entities[13]->GetTransform()->MoveAbsolute(9, 3, 0);
 }
 
 
@@ -309,7 +379,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		std::shared_ptr<SimplePixelShader> ps = entities[i]->GetMaterial()->GetPixelShader();
 		ps->SetFloat("time", totalTime);
 		ps->SetFloat3("ambientColor", ambientColor);
-		ps->SetData("directionalLight1", &lights[0], sizeof(Light));
+		ps->SetData("lights", &lights[0], sizeof(Light) * (int)lights.size());
 
 		entities[i]->Draw(activeCam);
 	}
@@ -545,6 +615,43 @@ void Game::BuildUI()
 		}
 
 		ImGui::TreePop();	// End of Camera header
+	}
+
+	if (ImGui::TreeNode("Lights")) 
+	{
+		ImGui::ColorEdit3("Ambient Light", &ambientColor.x);
+
+		for (int i = 0; i < lights.size(); i++)
+		{
+			// Push current ID so that multiple lights
+			// can have the same labels
+			ImGui::PushID(&lights[i]);
+			if (ImGui::TreeNode("Light Node", "Light %i", i))
+			{
+				ImGui::ColorEdit3("Color", &lights[i].Color.x);
+				ImGui::DragFloat("Intensity", &lights[i].Intensity, 0.1f, 0, 5);
+
+				// Different controls for different light types
+				switch (lights[i].Type)
+				{
+				case LIGHT_TYPE_DIRECTIONAL:
+					ImGui::DragFloat3("Direction", &lights[i].Direction.x, 0.01f);
+					break;
+				case LIGHT_TYPE_POINT:
+					ImGui::DragFloat3("Position", &lights[i].Position.x, 0.1f);
+					ImGui::DragFloat("Range", &lights[i].Range, 0.1f, 0, 50);
+					break;
+				case LIGHT_TYPE_SPOT:
+					// Unimplemented
+					break;
+				}
+
+				ImGui::TreePop();
+			}
+			ImGui::PopID();
+		}
+
+		ImGui::TreePop();
 	}
 
 	// Finish creating the ImGui Debug Window
