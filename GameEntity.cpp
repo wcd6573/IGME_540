@@ -1,6 +1,6 @@
 /*
 William Duprey
-9/26/24
+10/28/24
 GameEntity Implementation
 */
 
@@ -14,7 +14,7 @@ using namespace DirectX;
 GameEntity::GameEntity(std::shared_ptr<Mesh> _mesh,
 	std::shared_ptr<Material> _material)
 {
-	transform = Transform();
+	transform = std::make_shared<Transform>();
 	mesh = _mesh;
 	material = _material;
 }
@@ -26,9 +26,9 @@ GameEntity::GameEntity(std::shared_ptr<Mesh> _mesh,
 // Returns a pointer to the entity's Transform, allowing
 // it to be modified by code outside of this class.
 // --------------------------------------------------------
-Transform* GameEntity::GetTransform()
+std::shared_ptr<Transform> GameEntity::GetTransform()
 {
-	return &transform;
+	return transform;
 }
 
 std::shared_ptr<Mesh> GameEntity::GetMesh() { return mesh; }
@@ -50,29 +50,9 @@ void GameEntity::SetMaterial(std::shared_ptr<Material> _material) { material = _
 // --------------------------------------------------------
 void GameEntity::Draw(std::shared_ptr<Camera> camera)
 {
-	std::shared_ptr<SimpleVertexShader> vs = material->GetVertexShader();
-	std::shared_ptr<SimplePixelShader> ps = material->GetPixelShader();
+	// Set up shaders and shader data
+	material->PrepareMaterial(transform, camera);
 
-	// Activate the correct shaders
-	vs->SetShader();
-	ps->SetShader();
-
-	// Strings must exactly match variable names in shader cbuffer
-	vs->SetMatrix4x4("world", transform.GetWorldMatrix());
-	vs->SetMatrix4x4("worldInvTranspose", transform.GetWorldInverseTransposeMatrix());
-	vs->SetMatrix4x4("view", camera->GetViewMatrix());
-	vs->SetMatrix4x4("projection", camera->GetProjectionMatrix());
-	
-	// Copy data to the GPU
-	vs->CopyAllBufferData();
-
-	// Do the same for the pixel shader
-	ps->SetFloat3("colorTint", material->GetColorTint());
-	ps->SetFloat("roughness", material->GetRoughness());
-	ps->SetFloat3("cameraPosition", camera->GetTransform()->GetPosition());
-	ps->CopyAllBufferData();
-
-	// Finally, call the mesh draw method
-	// (also sets vertex and index buffers)
+	// Set vertex / index buffers and draw using the mesh
 	mesh->SetBuffersAndDraw();
 }

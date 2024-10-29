@@ -9,6 +9,8 @@ Material Class Header
 #include <memory>
 #include <unordered_map>
 
+#include "Camera.h"
+#include "Transform.h"
 #include "SimpleShader.h"
 
 
@@ -45,6 +47,9 @@ public:
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv);
 	void AddSampler(std::string name, 
 		Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler);
+
+	void PrepareMaterial(std::shared_ptr<Transform> transform,
+		std::shared_ptr<Camera> camera);
 
 private:
 	const char* name;

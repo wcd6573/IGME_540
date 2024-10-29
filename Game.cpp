@@ -1,5 +1,5 @@
 // William Duprey
-// 10/16/24
+// 10/28/24
 // Game Class Implementation
 // Modified from starter code provided by Prof. Chris Cascioli
 
@@ -205,19 +205,19 @@ void Game::LoadShadersAndCreateMaterials()
 	Light directional1 = {};
 	directional1.Type = LIGHT_TYPE_DIRECTIONAL;
 	directional1.Direction = XMFLOAT3(1.0f, 0.0f, 0.0f);
-	directional1.Color = XMFLOAT3(1.0f, 0.0f, 0.0f);
+	directional1.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
 	directional1.Intensity = 1.0f;
 
 	Light directional2 = {};
 	directional2.Type = LIGHT_TYPE_DIRECTIONAL;
 	directional2.Direction = XMFLOAT3(0.0f, -1.0f, 0.0f);
-	directional2.Color = XMFLOAT3(0.0f, 1.0f, 0.0f);
+	directional2.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
 	directional2.Intensity = 1.0f;
 
 	Light directional3 = {};
 	directional3.Type = LIGHT_TYPE_DIRECTIONAL;
 	directional3.Direction = XMFLOAT3(-1.0f, 1.0f, -0.5f);
-	directional3.Color = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	directional3.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
 	directional3.Intensity = 1.0f;
 
 	Light point1 = {};
@@ -527,7 +527,7 @@ void Game::BuildUI()
 				ImGui::Spacing();
 
 				// Get pointer to transform and each field of it
-				Transform* trans = entities[i].get()->GetTransform();
+				std::shared_ptr<Transform> trans = entities[i].get()->GetTransform();
 				XMFLOAT3 pos = trans->GetPosition();
 				XMFLOAT3 rot = trans->GetRotation();
 				XMFLOAT3 sca = trans->GetScale();

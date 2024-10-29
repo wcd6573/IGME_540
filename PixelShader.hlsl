@@ -1,6 +1,6 @@
 /*
 William Duprey
-10/16/24
+10/28/24
 Pixel Shader
 Modified from starter code provided by Prof. Chris Cascioli
 */
@@ -23,6 +23,10 @@ cbuffer ExternalData : register(b0)
     Light lights[NUM_LIGHTS];
 }
 
+// t for textures, s for samplers
+Texture2D SurfaceTexture  : register(t0);
+SamplerState BasicSampler : register(s0);
+
 // --------------------------------------------------------
 // The entry point (main method) for our pixel shader
 // 
@@ -38,8 +42,12 @@ float4 main(VertexToPixel input) : SV_TARGET
     // across the face of triangles, making them not unit vectors
     input.normal = normalize(input.normal);
 
+    // Sample texture to get the proper surface color
+    float3 surfaceColor = SurfaceTexture.Sample(BasicSampler, input.uv).rgb;
+    surfaceColor *= colorTint;  // Tint using provided value
+    
     // --- Ambient ---
-    float3 totalLight = ambientColor * colorTint;
+    float3 totalLight = ambientColor * surfaceColor;
     
     // Loop through lights
     for (int i = 0; i < NUM_LIGHTS; i++)
@@ -50,11 +58,11 @@ float4 main(VertexToPixel input) : SV_TARGET
         switch (light.Type)
         {
             case LIGHT_TYPE_DIRECTIONAL:
-                totalLight += directionalLight(light, colorTint, input.normal,
+                totalLight += directionalLight(light, surfaceColor, input.normal,
                     cameraPosition, input.worldPosition, roughness);
                 break;
             case LIGHT_TYPE_POINT:
-                totalLight += pointLight(light, colorTint, input.normal,
+                totalLight += pointLight(light, surfaceColor, input.normal,
                     cameraPosition, input.worldPosition, roughness);
                 break;
             case LIGHT_TYPE_SPOT:
