@@ -1,6 +1,6 @@
 /*
 William Duprey
-10/28/24
+10/29/24
 Material Class Implementation
 */
 

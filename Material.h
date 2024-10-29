@@ -1,6 +1,6 @@
 /*
 William Duprey
-10/28/24
+10/29/24
 Material Class Header
 */
 
@@ -16,7 +16,7 @@ Material Class Header
 
 // --------------------------------------------------------
 // A class representing a material for an object.
-// COntains a color tint, as well as the vertex and
+// Contains a color tint, as well as the vertex and
 // pixel shaders necessary to draw whichever object
 // the materrial is applied to.
 // --------------------------------------------------------

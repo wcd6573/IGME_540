@@ -1,6 +1,6 @@
 /*
 William Duprey
-10/28/24
+10/29/24
 Pixel Shader
 Modified from starter code provided by Prof. Chris Cascioli
 */
@@ -44,17 +44,19 @@ SamplerState BasicSampler : register(s0);
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
+    // --- Mess with input ---
     // Gotta normalize those normals, since they get interpolated
     // across the face of triangles, making them not unit vectors
     input.normal = normalize(input.normal);
     
     // Get extremely weird with voronoi, scale the
-    // UVs by voronoi, angled with time, and with only 1 cell
+    // UVs by voronoi, angled with time, and with 3 cell density
     // Since it's just UVs, there's an ugly seam along the
-    // 3D object, but that's just how UVs work
-    //input.uv *= Voronoi2D(input.uv, time, 1);
-    input.uv = (input.uv * uvScale) + uvOffset;
+    // 3D objects, but that's just how UVs work
+    input.uv *= Voronoi2D(input.uv, time, 3);
     
+    // Scale and offset uv coordinates by given cbuffer values
+    input.uv = (input.uv * uvScale) + uvOffset;
     
     // --- Sample Textures ---
     // Sample texture to get the proper surface color
