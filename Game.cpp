@@ -11,6 +11,7 @@
 #include "Window.h"
 
 #include <DirectXMath.h>
+#include <WICTextureLoader.h>
 
 // Needed for a helper function to load pre-compiled shader files
 #pragma comment(lib, "d3dcompiler.lib")
@@ -123,7 +124,9 @@ Game::~Game()
 
 
 // --------------------------------------------------------
-// Uses SimpleShader to set up necessary shaders.
+// Uses SimpleShader to set up necessary shaders, loads
+// textures from files using WICTextureLoader, and creates
+// some lights.
 // --------------------------------------------------------
 void Game::LoadShadersAndCreateMaterials()
 {
@@ -148,6 +151,31 @@ void Game::LoadShadersAndCreateMaterials()
 		std::make_shared<SimplePixelShader>(
 			Graphics::Device, Graphics::Context,
 			FixPath(L"Voronoi.cso").c_str());
+
+
+	// --- Load some textures ---
+	// Shader Resource View ComPtrs for each texture
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brokenTilesSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rustyMetalSRV;
+
+	// Load textures
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
+		FixPath(L"../../Assets/Textures/brokentiles.png").c_str(), 
+		0, brokenTilesSRV.GetAddressOf());
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
+		FixPath(L"../../Assets/Textures/rustymetal.png").c_str(),
+		0, rustyMetalSRV.GetAddressOf());
+
+	// Create sampler state
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
+	D3D11_SAMPLER_DESC samplerDesc = {};
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+	samplerDesc.MaxAnisotropy = 8;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	Graphics::Device->CreateSamplerState(&samplerDesc, sampler.GetAddressOf());
 
 
 	// --- Create some Materials ---
