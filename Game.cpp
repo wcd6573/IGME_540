@@ -194,7 +194,8 @@ void Game::LoadShadersAndCreateMaterials()
 		"Broken Tiles",
 		XMFLOAT3(1.0f, 1.0f, 1.0f), 0.02f,
 		vertexShader,
-		pixelShader);
+		pixelShader,
+		XMFLOAT2(2, 2), XMFLOAT2(0, 0.5f));
 	mat->AddTextureSRV("SurfaceTexture", brokenTilesSRV);
 	mat->AddTextureSRV("SpecularMap", brokenTilesSpecSRV);
 	mat->AddSampler("BasicSampler", sampler);
@@ -204,7 +205,8 @@ void Game::LoadShadersAndCreateMaterials()
 		"Rusty Metal",
 		XMFLOAT3(1.0f, 1.0f, 1.0f), 0.5f,
 		vertexShader,
-		pixelShader);
+		pixelShader,
+		XMFLOAT2(0.75f, 2), XMFLOAT2(0.5f, 5));
 	mat->AddTextureSRV("SurfaceTexture", rustyMetalSRV);
 	mat->AddTextureSRV("SpecularMap", rustyMetalSpecSRV);
 	mat->AddSampler("BasicSampler", sampler);

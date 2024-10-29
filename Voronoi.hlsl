@@ -30,5 +30,5 @@ cbuffer ExternalData : register(b0)
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-    return Voronoi(input, time, 2.5f);
+    return Voronoi3D(input.worldPosition, time, 2.5f);
 }

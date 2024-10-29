@@ -19,6 +19,9 @@ cbuffer ExternalData : register(b0)
     float3 colorTint;
     float3 cameraPosition;
     float3 ambientColor;
+    
+    float2 uvScale;
+    float2 uvOffset;
     float time;
     
     Light lights[NUM_LIGHTS];
@@ -44,7 +47,15 @@ float4 main(VertexToPixel input) : SV_TARGET
     // Gotta normalize those normals, since they get interpolated
     // across the face of triangles, making them not unit vectors
     input.normal = normalize(input.normal);
-
+    
+    // Get extremely weird with voronoi, scale the
+    // UVs by voronoi, angled with time, and with only 1 cell
+    // Since it's just UVs, there's an ugly seam along the
+    // 3D object, but that's just how UVs work
+    //input.uv *= Voronoi2D(input.uv, time, 1);
+    input.uv = (input.uv * uvScale) + uvOffset;
+    
+    
     // --- Sample Textures ---
     // Sample texture to get the proper surface color
     float3 surfaceColor = SurfaceTexture.Sample(BasicSampler, input.uv).rgb;

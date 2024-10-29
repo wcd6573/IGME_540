@@ -17,12 +17,15 @@ using namespace DirectX;
 Material::Material(const char* _name,
 	XMFLOAT3 _colorTint, float _roughness,
 	std::shared_ptr<SimpleVertexShader> _vs, 
-	std::shared_ptr<SimplePixelShader> _ps)
+	std::shared_ptr<SimplePixelShader> _ps,
+	XMFLOAT2 _uvScale, XMFLOAT2 _uvOffset)
 	: name(_name),
 	  colorTint(_colorTint),
 	  roughness(_roughness),
 	  vs(_vs),
-	  ps(_ps)
+	  ps(_ps),
+	  uvScale(_uvScale),
+	  uvOffset(_uvOffset)
 {
 }
 
@@ -50,6 +53,8 @@ void Material::PrepareMaterial(std::shared_ptr<Transform> transform,
 	ps->SetFloat3("colorTint", colorTint);
 	ps->SetFloat("roughness", roughness);
 	ps->SetFloat3("cameraPosition", camera->GetTransform()->GetPosition());
+	ps->SetFloat2("uvScale", uvScale);
+	ps->SetFloat2("uvOffset", uvOffset);
 	ps->CopyAllBufferData();
 
 	// Loop through srv and sampler unordered maps to set resources
@@ -71,6 +76,8 @@ DirectX::XMFLOAT3 Material::GetColorTint() { return colorTint; }
 float Material::GetRoughness() { return roughness; }
 std::shared_ptr<SimpleVertexShader> Material::GetVertexShader() { return vs; }
 std::shared_ptr<SimplePixelShader> Material::GetPixelShader() { return ps; }
+DirectX::XMFLOAT2 Material::GetUVScale() { return uvScale; }
+DirectX::XMFLOAT2 Material::GetUVOffset() { return uvOffset; }
 
 ///////////////////////////////////////////////////////////////////////////////
 // ------------------------------- SETTERS --------------------------------- //
@@ -79,6 +86,8 @@ void Material::SetColorTint(XMFLOAT3 _colorTint) { colorTint = _colorTint; }
 void Material::SetRoughness(float _roughness) { roughness = _roughness; }
 void Material::SetVertexShader(std::shared_ptr<SimpleVertexShader> _vs) { vs = _vs; }
 void Material::SetPixelShader(std::shared_ptr<SimplePixelShader> _ps) { ps = _ps; }
+void Material::SetUVScale(DirectX::XMFLOAT2 _uvScale) { uvScale = _uvScale; }
+void Material::SetUVOffset(DirectX::XMFLOAT2 _uvOffset) { uvOffset = _uvOffset; }
 
 ///////////////////////////////////////////////////////////////////////////////
 // ----------------------- UNORDERED MAP FUNCTIONS ------------------------- //
