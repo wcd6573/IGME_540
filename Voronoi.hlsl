@@ -26,49 +26,9 @@ cbuffer ExternalData : register(b0)
 }
 
 // --------------------------------------------------------
-// Does some stuff that's still a little over my head in
-// terms of the actual Voronoi algorithm, but the result 
-// is a 3D pattern of cells whose density and angle offset
-// can be easily changed.
+// Simply calls the Voronoi helper function.
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-    // This could be passed through the constant buffer,
-    // but to keep it simple, I'm just hard-coding it
-    float cellDensity = 1.5f;
-
-    // Tile the space based on the cell density
-    float3 g = floor(input.worldPosition * cellDensity);
-    float3 f = frac(input.worldPosition * cellDensity);
-
-    // Track the closest distance, used to color the pixel
-    float minDist = 1.0f;
-    
-    // Loop through each neighboring tile in 3 dimensions
-    for (int x = -1; x <= 1; x++)
-    {
-        for (int y = -1; y <= 1; y++)
-        {
-            for (int z = -1; z <= 1; z++)
-            {
-                // Make a float3 for the neighbor cell we're looking at
-                float3 neighbor = float3(x, y, z);
-                
-                // Get its deterministically random position,
-                // using the total time elapsed as an angle offset
-                float3 offset = random_float3(g + neighbor, time);
-                
-                // Vector to that neighbor
-                float3 diff = neighbor + offset - f;
-
-                // Magnitude of that vector
-                float dist = length(diff);
-                
-                // Keep the closer distance
-                minDist = min(minDist, dist);
-            }
-        }
-    }
-    
-    return minDist;
+    return Voronoi(input, time, 2.5f);
 }

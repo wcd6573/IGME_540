@@ -1,6 +1,6 @@
 /*
 William Duprey
-10/24/24
+10/28/24
 Shader Include File
 */
 
@@ -72,6 +72,50 @@ inline float3 random_float3(float3 pos, float offset)
         cos(pos.y * offset) * 0.5f + 0.5f,
         sin(pos.z * offset) * 0.5f + 0.5f
     );
+}
+
+// --------------------------------------------------------
+// Does some stuff that's still a little over my head in
+// terms of the actual Voronoi algorithm, but the result 
+// is a 3D pattern of cells whose density and angle offset
+// can be easily changed.
+// --------------------------------------------------------
+inline float Voronoi(VertexToPixel input, float angle, float density)
+{
+    // Tile the space based on the cell density
+    float3 g = floor(input.worldPosition * density);
+    float3 f = frac(input.worldPosition * density);
+
+    // Track the closest distance, used to color the pixel
+    float minDist = 1.0f;
+    
+    // Loop through each neighboring tile in 3 dimensions
+    for (int x = -1; x <= 1; x++)
+    {
+        for (int y = -1; y <= 1; y++)
+        {
+            for (int z = -1; z <= 1; z++)
+            {
+                // Make a float3 for the neighbor cell we're looking at
+                float3 neighbor = float3(x, y, z);
+                
+                // Get its deterministically random position,
+                // using an angle offset
+                float3 offset = random_float3(g + neighbor, angle);
+                
+                // Vector to that neighbor
+                float3 diff = neighbor + offset - f;
+
+                // Magnitude of that vector
+                float dist = length(diff);
+                
+                // Keep the closer distance
+                minDist = min(minDist, dist);
+            }
+        }
+    }
+    
+    return minDist;
 }
 
 #endif

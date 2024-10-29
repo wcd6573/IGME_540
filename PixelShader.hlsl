@@ -19,6 +19,7 @@ cbuffer ExternalData : register(b0)
     float3 colorTint;
     float3 cameraPosition;
     float3 ambientColor;
+    float time;
     
     Light lights[NUM_LIGHTS];
 }
