@@ -1,6 +1,6 @@
 /*
 William Duprey
-10/24/24
+10/28/24
 Shader Lighting Header
 */
 
@@ -69,7 +69,7 @@ float attenuate(Light light, float3 worldPos)
 // ----------------------------- LIGHT TYPES -------------------------------- //
 ////////////////////////////////////////////////////////////////////////////////
 float3 directionalLight(Light light, float3 color, float3 normal, 
-    float3 cameraPos, float3 worldPos, float roughness)
+    float3 cameraPos, float3 worldPos, float roughness, float specScale)
 {
     // --- Diffuse ---
     float3 toLight = normalize(-light.Direction);
@@ -78,7 +78,8 @@ float3 directionalLight(Light light, float3 color, float3 normal,
     // --- Specular ---
     // Calculate vector from camera to pixel
     float3 toCam = normalize(cameraPos - worldPos);
-    float3 specular = calculateSpecular(normal, toLight, toCam, roughness);
+    float3 specular = calculateSpecular(normal, toLight, toCam, roughness)
+        * specScale; // Scale by specular map value
     
     // Combine light and return
     // Multiple specular by color? No right answer
@@ -87,7 +88,7 @@ float3 directionalLight(Light light, float3 color, float3 normal,
 }
 
 float3 pointLight(Light light, float3 color, float3 normal,
-    float3 cameraPos, float3 worldPos, float roughness)
+    float3 cameraPos, float3 worldPos, float roughness, float specScale)
 {
     // --- Diffuse ---
     // Point lights have no direction, so calculate one
@@ -97,7 +98,8 @@ float3 pointLight(Light light, float3 color, float3 normal,
     
     // --- Specular ---
     float3 toCam = normalize(cameraPos - worldPos);
-    float3 specular = calculateSpecular(normal, toLight, toCam, roughness);
+    float3 specular = calculateSpecular(normal, toLight, toCam, roughness)
+        * specScale;    // Scale by specular map value
 
     // Combine light, scale by attenuation, and return
     return ((diffuse * color) + specular) *

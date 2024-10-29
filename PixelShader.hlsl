@@ -25,6 +25,8 @@ cbuffer ExternalData : register(b0)
 
 // t for textures, s for samplers
 Texture2D SurfaceTexture  : register(t0);
+Texture2D SpecularMap     : register(t1);
+
 SamplerState BasicSampler : register(s0);
 
 // --------------------------------------------------------
@@ -42,11 +44,16 @@ float4 main(VertexToPixel input) : SV_TARGET
     // across the face of triangles, making them not unit vectors
     input.normal = normalize(input.normal);
 
+    // --- Sample Textures ---
     // Sample texture to get the proper surface color
     float3 surfaceColor = SurfaceTexture.Sample(BasicSampler, input.uv).rgb;
     surfaceColor *= colorTint;  // Tint using provided value
     
-    // --- Ambient ---
+    // Sample specular map to get the scale value
+    float specScale = SpecularMap.Sample(BasicSampler, input.uv).r;
+    
+    // --- Calculate Light ---
+    // Ambient is universally applied once
     float3 totalLight = ambientColor * surfaceColor;
     
     // Loop through lights
@@ -59,11 +66,11 @@ float4 main(VertexToPixel input) : SV_TARGET
         {
             case LIGHT_TYPE_DIRECTIONAL:
                 totalLight += directionalLight(light, surfaceColor, input.normal,
-                    cameraPosition, input.worldPosition, roughness);
+                    cameraPosition, input.worldPosition, roughness, specScale);
                 break;
             case LIGHT_TYPE_POINT:
                 totalLight += pointLight(light, surfaceColor, input.normal,
-                    cameraPosition, input.worldPosition, roughness);
+                    cameraPosition, input.worldPosition, roughness, specScale);
                 break;
             case LIGHT_TYPE_SPOT:
                 // Unimplemented

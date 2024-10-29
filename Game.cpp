@@ -156,15 +156,23 @@ void Game::LoadShadersAndCreateMaterials()
 	// --- Load some textures ---
 	// Shader Resource View ComPtrs for each texture
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brokenTilesSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brokenTilesSpecSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rustyMetalSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rustyMetalSpecSRV;
 
 	// Load textures
 	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
 		FixPath(L"../../Assets/Textures/brokentiles.png").c_str(), 
 		0, brokenTilesSRV.GetAddressOf());
 	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
+		FixPath(L"../../Assets/Textures/brokentiles_specular.png").c_str(),
+		0, brokenTilesSpecSRV.GetAddressOf());
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
 		FixPath(L"../../Assets/Textures/rustymetal.png").c_str(),
 		0, rustyMetalSRV.GetAddressOf());
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
+		FixPath(L"../../Assets/Textures/rustymetal_specular.png").c_str(),
+		0, rustyMetalSpecSRV.GetAddressOf());
 
 	// Create sampler state
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
@@ -188,6 +196,7 @@ void Game::LoadShadersAndCreateMaterials()
 		vertexShader,
 		pixelShader);
 	mat->AddTextureSRV("SurfaceTexture", brokenTilesSRV);
+	mat->AddTextureSRV("SpecularMap", brokenTilesSpecSRV);
 	mat->AddSampler("BasicSampler", sampler);
 	materials.push_back(mat);
 	// Rusty metal material
@@ -197,6 +206,7 @@ void Game::LoadShadersAndCreateMaterials()
 		vertexShader,
 		pixelShader);
 	mat->AddTextureSRV("SurfaceTexture", rustyMetalSRV);
+	mat->AddTextureSRV("SpecularMap", rustyMetalSpecSRV);
 	mat->AddSampler("BasicSampler", sampler);
 	materials.push_back(mat);
 
