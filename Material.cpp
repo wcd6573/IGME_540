@@ -42,3 +42,18 @@ void Material::SetColorTint(XMFLOAT3 _colorTint) { colorTint = _colorTint; }
 void Material::SetRoughness(float _roughness) { roughness = _roughness; }
 void Material::SetVertexShader(std::shared_ptr<SimpleVertexShader> _vs) { vs = _vs; }
 void Material::SetPixelShader(std::shared_ptr<SimplePixelShader> _ps) { ps = _ps; }
+
+///////////////////////////////////////////////////////////////////////////////
+// ----------------------- UNORDERED MAP FUNCTIONS ------------------------- //
+///////////////////////////////////////////////////////////////////////////////
+void Material::AddTextureSRV(std::string name, 
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv)
+{
+	textureSRVs.insert({ name, srv });
+}
+
+void Material::AddSampler(std::string name, 
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler)
+{
+	samplers.insert({ name, sampler });
+}

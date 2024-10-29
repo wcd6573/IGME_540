@@ -179,36 +179,27 @@ void Game::LoadShadersAndCreateMaterials()
 
 
 	// --- Create some Materials ---
-	// White, metallic
-	materials.push_back(std::make_shared<Material>(
-		"White Metallic",
+	std::shared_ptr<Material> mat;
+	
+	// Broken tiles material
+	mat = std::make_shared<Material>(
+		"Broken Tiles",
 		XMFLOAT3(1.0f, 1.0f, 1.0f), 0.02f,
 		vertexShader,
-		pixelShader));
-	// White, matte
-	materials.push_back(std::make_shared<Material>(
-		"White Matte",
-		XMFLOAT3(1.0f, 1.0f, 1.0f), 0.98f,
-		vertexShader,
-		pixelShader));
-	// Normal Shader
-	materials.push_back(std::make_shared<Material>(
-		"Normal",
+		pixelShader);
+	mat->AddTextureSRV("SurfaceTexture", brokenTilesSRV);
+	mat->AddSampler("BasicSampler", sampler);
+	materials.push_back(mat);
+	// Rusty metal material
+	mat = std::make_shared<Material>(
+		"Rusty Metal",
 		XMFLOAT3(1.0f, 1.0f, 1.0f), 0.5f,
 		vertexShader,
-		normalPS));
-	// UV Shader
-	materials.push_back(std::make_shared<Material>(
-		"UV",
-		XMFLOAT3(1.0f, 1.0f, 1.0f), 0.75f,
-		vertexShader,
-		uvPS));
-	// Voronoi Shader
-	materials.push_back(std::make_shared<Material>(
-		"Voronoi",
-		XMFLOAT3(1.0f, 1.0f, 1.0f), 0.0f,
-		vertexShader,
-		voronoi));
+		pixelShader);
+	mat->AddTextureSRV("SurfaceTexture", rustyMetalSRV);
+	mat->AddSampler("BasicSampler", sampler);
+	materials.push_back(mat);
+
 	
 	// --- Create Lights ---
 	Light directional1 = {};

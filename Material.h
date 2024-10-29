@@ -1,12 +1,14 @@
 /*
 William Duprey
-10/24/24
+10/28/24
 Material Class Header
 */
 
 #pragma once
 #include <DirectXMath.h>
 #include <memory>
+#include <unordered_map>
+
 #include "SimpleShader.h"
 
 
@@ -20,7 +22,7 @@ class Material
 {
 public:
 	// Constructor
-	Material(const char* _name, 
+	Material(const char* _name,
 		DirectX::XMFLOAT3 _colorTint, float _roughness,
 		std::shared_ptr<SimpleVertexShader> _vs,
 		std::shared_ptr<SimplePixelShader> _ps);
@@ -37,12 +39,25 @@ public:
 	void SetRoughness(float _roughness);
 	void SetVertexShader(std::shared_ptr<SimpleVertexShader> _vs);
 	void SetPixelShader(std::shared_ptr<SimplePixelShader> _ps);
+	
+	// Add methods for unordered maps
+	void AddTextureSRV(std::string name, 
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv);
+	void AddSampler(std::string name, 
+		Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler);
 
 private:
 	const char* name;
 	DirectX::XMFLOAT3 colorTint;
 	float roughness;
+
+	// Simple shader resources
 	std::shared_ptr<SimpleVertexShader> vs;
 	std::shared_ptr<SimplePixelShader> ps;
-};
 
+	// ComPtr hash tables / unordered_maps / dictionaries
+	std::unordered_map<std::string, 
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> textureSRVs;
+	std::unordered_map<std::string, 
+		Microsoft::WRL::ComPtr<ID3D11SamplerState>> samplers;
+};
