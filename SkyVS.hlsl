@@ -18,7 +18,7 @@ cbuffer ExternalData : register(b0)
 // The entry point for the sky vertex shader. Sets up 
 // the VertexToPixel_Sky struct for the sky pixel shader.
 // --------------------------------------------------------
-VertexToPixel_Sky main( VertexShaderInput input ) : SV_POSITION
+VertexToPixel_Sky main( VertexShaderInput input )
 {
     VertexToPixel_Sky output;
     
