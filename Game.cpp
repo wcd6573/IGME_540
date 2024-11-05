@@ -48,8 +48,9 @@ void Game::Initialize()
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
-	LoadShadersAndCreateMaterials();
-	CreateGeometry();
+	LoadShadersMaterialsMeshes();
+	CreateEntities();
+	CreateLights();
 
 	// Set initial graphics API state
 	//  - These settings persist until we change them
@@ -128,7 +129,7 @@ Game::~Game()
 // textures from files using WICTextureLoader, and creates
 // some lights.
 // --------------------------------------------------------
-void Game::LoadShadersAndCreateMaterials()
+void Game::LoadShadersMaterialsMeshes()
 {
 	// --- Load Shaders ---
 	std::shared_ptr<SimpleVertexShader> vertexShader = 
@@ -151,7 +152,6 @@ void Game::LoadShadersAndCreateMaterials()
 		std::make_shared<SimplePixelShader>(
 			Graphics::Device, Graphics::Context,
 			FixPath(L"Voronoi.cso").c_str());
-
 
 	// --- Load some textures ---
 	// Shader Resource View ComPtrs for each texture
@@ -214,7 +214,6 @@ void Game::LoadShadersAndCreateMaterials()
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	Graphics::Device->CreateSamplerState(&samplerDesc, sampler.GetAddressOf());
 
-
 	// --- Create some Materials ---
 	std::shared_ptr<Material> mat;
 	
@@ -274,67 +273,6 @@ void Game::LoadShadersAndCreateMaterials()
 	mat->AddSampler("BasicSampler", sampler);
 	materials.push_back(mat);
 
-	
-	// --- Create Lights ---
-	Light directional1 = {};
-	directional1.Type = LIGHT_TYPE_DIRECTIONAL;
-	directional1.Direction = XMFLOAT3(1.0f, 0.0f, 0.0f);
-	directional1.Color = XMFLOAT3(1.0f, 0.0f, 0.0f);
-	directional1.Intensity = 1.0f;
-
-	Light directional2 = {};
-	directional2.Type = LIGHT_TYPE_DIRECTIONAL;
-	directional2.Direction = XMFLOAT3(0.0f, -1.0f, 0.0f);
-	directional2.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
-	directional2.Intensity = 1.0f;
-
-	Light directional3 = {};
-	directional3.Type = LIGHT_TYPE_DIRECTIONAL;
-	directional3.Direction = XMFLOAT3(-1.0f, 1.0f, -0.5f);
-	directional3.Color = XMFLOAT3(0.0f, 0.0f, 1.0f);
-	directional3.Intensity = 1.0f;
-
-	Light point1 = {};
-	point1.Type = LIGHT_TYPE_POINT;
-	point1.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
-	point1.Intensity = 1.0f;
-	point1.Position = XMFLOAT3(-1.5f, 0, 0);
-	point1.Range = 10.0f;
-
-	Light point2 = {};
-	point2.Type = LIGHT_TYPE_POINT;
-	point2.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
-	point2.Intensity = 0.5f;
-	point2.Position = XMFLOAT3(1.5f, 0, 0);
-	point2.Range = 10.0f;
-
-	lights.push_back(directional1);
-	lights.push_back(directional2);
-	lights.push_back(directional3);
-	//lights.push_back(point1);
-	//lights.push_back(point2);
-
-	// Normalize directions for everything other than point lights
-	for (int i = 0; i < lights.size(); i++) 
-	{
-		if (lights[i].Type != LIGHT_TYPE_POINT) {
-			XMStoreFloat3(
-				&lights[i].Direction,
-				XMVector3Normalize(XMLoadFloat3(&lights[i].Direction))
-			);
-		}
-	}
-}
-
-// --------------------------------------------------------
-// Creates the geometry we're going to draw
-// TODO: maybe refactor this to be in the same method
-//		 as the shaders / materials, so that I could use
-//		 named local variables instead of having to
-//       remember indices in the vectors?
-// --------------------------------------------------------
-void Game::CreateGeometry()
-{
 	// --- Load meshes from files ---
 	meshes.push_back(std::make_shared<Mesh>("Cube",
 		FixPath("../../Assets/Models/cube.obj").c_str()));
@@ -351,10 +289,30 @@ void Game::CreateGeometry()
 	meshes.push_back(std::make_shared<Mesh>("Quad Double Sided",
 		FixPath("../../Assets/Models/quad_double_sided.obj").c_str()));
 
+	// --- Set up the sky ---
+	std::shared_ptr<SimpleVertexShader> skyVS =
+		std::make_shared<SimpleVertexShader>(
+			Graphics::Device, Graphics::Context,
+			FixPath(L"SkyVS.cso").c_str());
+	std::shared_ptr<SimplePixelShader> skyPS =
+		std::make_shared<SimplePixelShader>(
+			Graphics::Device, Graphics::Context,
+			FixPath(L"SkyPS.cso").c_str());
+	sky = std::make_shared<Sky>(FixPath(L"../../Assets/Textures/Skies/Planet/right.png").c_str(),
+		FixPath(L"../../Assets/Textures/Skies/Planet/left.png").c_str(),
+		FixPath(L"../../Assets/Textures/Skies/Planet/up.png").c_str(),
+		FixPath(L"../../Assets/Textures/Skies/Planet/down.png").c_str(),
+		FixPath(L"../../Assets/Textures/Skies/Planet/front.png").c_str(),
+		FixPath(L"../../Assets/Textures/Skies/Planet/back.png").c_str(),
+		skyVS, skyPS, meshes[0], sampler);
+}
+
+void Game::CreateEntities()
+{
 	// --- Create a bunch of entities ---
 	// Create two entities using each mesh
 	// First set uses shiny material, second uses matte
-	
+
 	// Cubes
 	entities.push_back(std::make_shared<GameEntity>(
 		meshes[0], materials[2]));
@@ -410,6 +368,58 @@ void Game::CreateGeometry()
 	entities[13]->GetTransform()->MoveAbsolute(9, 3, 0);
 }
 
+void Game::CreateLights()
+{
+	// --- Create Lights ---
+	Light directional1 = {};
+	directional1.Type = LIGHT_TYPE_DIRECTIONAL;
+	directional1.Direction = XMFLOAT3(1.0f, 0.0f, 0.0f);
+	directional1.Color = XMFLOAT3(1.0f, 0.0f, 0.0f);
+	directional1.Intensity = 1.0f;
+
+	Light directional2 = {};
+	directional2.Type = LIGHT_TYPE_DIRECTIONAL;
+	directional2.Direction = XMFLOAT3(0.0f, -1.0f, 0.0f);
+	directional2.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
+	directional2.Intensity = 1.0f;
+
+	Light directional3 = {};
+	directional3.Type = LIGHT_TYPE_DIRECTIONAL;
+	directional3.Direction = XMFLOAT3(-1.0f, 1.0f, -0.5f);
+	directional3.Color = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	directional3.Intensity = 1.0f;
+
+	Light point1 = {};
+	point1.Type = LIGHT_TYPE_POINT;
+	point1.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
+	point1.Intensity = 1.0f;
+	point1.Position = XMFLOAT3(-1.5f, 0, 0);
+	point1.Range = 10.0f;
+
+	Light point2 = {};
+	point2.Type = LIGHT_TYPE_POINT;
+	point2.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
+	point2.Intensity = 0.5f;
+	point2.Position = XMFLOAT3(1.5f, 0, 0);
+	point2.Range = 10.0f;
+
+	lights.push_back(directional1);
+	lights.push_back(directional2);
+	lights.push_back(directional3);
+	//lights.push_back(point1);
+	//lights.push_back(point2);
+
+	// Normalize directions for everything other than point lights
+	for (int i = 0; i < lights.size(); i++)
+	{
+		if (lights[i].Type != LIGHT_TYPE_POINT) {
+			XMStoreFloat3(
+				&lights[i].Direction,
+				XMVector3Normalize(XMLoadFloat3(&lights[i].Direction))
+			);
+		}
+	}
+}
 
 // --------------------------------------------------------
 // Handle resizing to match the new window size
@@ -476,6 +486,10 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		entities[i]->Draw(activeCam);
 	}
+
+	// Draw the sky after entities, as depth buffer will 
+	// ensure redundant pixels are not rendered
+	sky->Draw(activeCam);
 
 	// Frame END
 	// - These should happen exactly ONCE PER FRAME

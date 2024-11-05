@@ -15,6 +15,7 @@
 #include "Camera.h"
 #include "Material.h"
 #include "Lights.h"
+#include "Sky.h"
 #include "SimpleShader.h"
 
 class Game
@@ -35,8 +36,9 @@ public:
 private:
 
 	// Initialization helper methods - feel free to customize, combine, remove, etc.
-	void LoadShadersAndCreateMaterials();
-	void CreateGeometry();
+	void LoadShadersMaterialsMeshes();
+	void CreateEntities();
+	void CreateLights();
 
 	// ImGui helper methods
 	void NewFrameUI(float deltaTime);
@@ -46,6 +48,7 @@ private:
 	bool showDemoUI;
 
 	// 4-element array of floats for holding the background color
+	// TODO: Use XMFLOAT4 instead of being weird like this
 	std::shared_ptr<float[]> bgColor;
 	
 	// Vectors of shared pointers to easily loop through these elements
@@ -55,6 +58,7 @@ private:
 	std::vector<std::shared_ptr<Material>> materials;
 	std::vector<Light> lights;
 	DirectX::XMFLOAT3 ambientColor;
+	std::shared_ptr<Sky> sky;
 
 	// One camera to rule them all
 	// One camera to find them		
