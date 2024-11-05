@@ -155,10 +155,20 @@ void Game::LoadShadersAndCreateMaterials()
 
 	// --- Load some textures ---
 	// Shader Resource View ComPtrs for each texture
+	// Textures with Specular Maps
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brokenTilesSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brokenTilesSpecSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rustyMetalSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rustyMetalSpecSRV;
+	
+	// Textures with Normal Maps
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rockSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rockNormalsSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneNormalsSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cushionSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cushionNormalsSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> flatNormalsSRV;
 
 	// Load textures
 	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
@@ -173,6 +183,25 @@ void Game::LoadShadersAndCreateMaterials()
 	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
 		FixPath(L"../../Assets/Textures/rustymetal_specular.png").c_str(),
 		0, rustyMetalSpecSRV.GetAddressOf());
+
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
+		FixPath(L"../../Assets/Textures/rock.png").c_str(),
+		0, rockSRV.GetAddressOf());
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
+		FixPath(L"../../Assets/Textures/rock_normals.png").c_str(),
+		0, rockNormalsSRV.GetAddressOf());
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
+		FixPath(L"../../Assets/Textures/cobblestone.png").c_str(),
+		0, cobblestoneSRV.GetAddressOf());
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
+		FixPath(L"../../Assets/Textures/cobblestone_normals.png").c_str(),
+		0, cobblestoneNormalsSRV.GetAddressOf());
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
+		FixPath(L"../../Assets/Textures/cushion.png").c_str(),
+		0, cushionSRV.GetAddressOf());
+	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
+		FixPath(L"../../Assets/Textures/cushion_normals.png").c_str(),
+		0, cushionNormalsSRV.GetAddressOf());
 
 	// Create sampler state
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
@@ -211,13 +240,46 @@ void Game::LoadShadersAndCreateMaterials()
 	mat->AddTextureSRV("SpecularMap", rustyMetalSpecSRV);
 	mat->AddSampler("BasicSampler", sampler);
 	materials.push_back(mat);
+	// Rock material
+	mat = std::make_shared<Material>(
+		"Rock",
+		XMFLOAT3(1.0f, 1.0f, 1.0f), 0.02f,
+		vertexShader,
+		pixelShader,
+		XMFLOAT2(1, 1), XMFLOAT2(0, 0));
+	mat->AddTextureSRV("SurfaceTexture", rockSRV);
+	mat->AddTextureSRV("NormalMap", rockNormalsSRV);
+	mat->AddSampler("BasicSampler", sampler);
+	materials.push_back(mat);
+	// Cobblestone material
+	mat = std::make_shared<Material>(
+		"Cobblestone",
+		XMFLOAT3(1.0f, 1.0f, 1.0f), 0.75f,
+		vertexShader,
+		pixelShader,
+		XMFLOAT2(1, 1), XMFLOAT2(0, 0));
+	mat->AddTextureSRV("SurfaceTexture", cobblestoneSRV);
+	mat->AddTextureSRV("NormalMap", cobblestoneNormalsSRV);
+	mat->AddSampler("BasicSampler", sampler);
+	materials.push_back(mat);
+	// Cushion material
+	mat = std::make_shared<Material>(
+		"Cushion",
+		XMFLOAT3(1.0f, 1.0f, 1.0f), 0.50f,
+		vertexShader,
+		pixelShader,
+		XMFLOAT2(1, 1), XMFLOAT2(0, 0));
+	mat->AddTextureSRV("SurfaceTexture", cushionSRV);
+	mat->AddTextureSRV("NormalMap", cushionNormalsSRV);
+	mat->AddSampler("BasicSampler", sampler);
+	materials.push_back(mat);
 
 	
 	// --- Create Lights ---
 	Light directional1 = {};
 	directional1.Type = LIGHT_TYPE_DIRECTIONAL;
 	directional1.Direction = XMFLOAT3(1.0f, 0.0f, 0.0f);
-	directional1.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
+	directional1.Color = XMFLOAT3(1.0f, 0.0f, 0.0f);
 	directional1.Intensity = 1.0f;
 
 	Light directional2 = {};
@@ -229,7 +291,7 @@ void Game::LoadShadersAndCreateMaterials()
 	Light directional3 = {};
 	directional3.Type = LIGHT_TYPE_DIRECTIONAL;
 	directional3.Direction = XMFLOAT3(-1.0f, 1.0f, -0.5f);
-	directional3.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
+	directional3.Color = XMFLOAT3(0.0f, 0.0f, 1.0f);
 	directional3.Intensity = 1.0f;
 
 	Light point1 = {};
@@ -249,8 +311,8 @@ void Game::LoadShadersAndCreateMaterials()
 	lights.push_back(directional1);
 	lights.push_back(directional2);
 	lights.push_back(directional3);
-	lights.push_back(point1);
-	lights.push_back(point2);
+	//lights.push_back(point1);
+	//lights.push_back(point2);
 
 	// Normalize directions for everything other than point lights
 	for (int i = 0; i < lights.size(); i++) 
@@ -295,40 +357,40 @@ void Game::CreateGeometry()
 	
 	// Cubes
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[0], materials[0]));
+		meshes[0], materials[2]));
 	// Cylinders
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[1], materials[0]));
+		meshes[1], materials[2]));
 	// Helixes
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[2], materials[0]));
+		meshes[2], materials[2]));
 	// Spheres
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[3], materials[0]));
+		meshes[3], materials[2]));
 	// Toruses... Tori?
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[4], materials[0]));
+		meshes[4], materials[3]));
 	// 1-sided Quad
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[5], materials[0]));
+		meshes[5], materials[3]));
 	// 2-sided Quad
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[6], materials[0]));
+		meshes[6], materials[3]));
 	// Second set of entities
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[0], materials[1]));
+		meshes[0], materials[3]));
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[1], materials[1]));
+		meshes[1], materials[3]));
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[2], materials[1]));
+		meshes[2], materials[4]));
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[3], materials[1]));
+		meshes[3], materials[4]));
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[4], materials[1]));
+		meshes[4], materials[4]));
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[5], materials[1]));
+		meshes[5], materials[4]));
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[6], materials[1]));
+		meshes[6], materials[4]));
 
 	// Move those entities, copying the positions from
 	// the demo code to more easily verify my lights work

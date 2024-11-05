@@ -44,6 +44,7 @@ VertexToPixel main(VertexShaderInput input)
 
     // Properly transform normals to account for non-uniform scaling
     output.normal = mul((float3x3)worldInvTranspose, input.normal);
+    output.tangent = mul((float3x3)world, input.tangent);
     output.uv = input.uv;   
     
     // Multiply local position by world matrix to get world position

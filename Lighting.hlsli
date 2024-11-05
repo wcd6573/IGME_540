@@ -81,6 +81,15 @@ float3 directionalLight(Light light, float3 color, float3 normal,
     float3 specular = calculateSpecular(normal, toLight, toCam, roughness)
         * specScale; // Scale by specular map value
     
+    // Comments copied verbatim from assignment document:
+    // Cut the specular if the diffuse contribution is zero
+    // - any() returns 1 if any component of the param is non-zero
+    // - In other words:
+    //     - If the diffuse amount is 0, any(diffuse) returns 0
+    //     - If the diffuse amount is != 0, any(diffuse) returns 1
+    //     - So when diffuse is 0, specular becomes 0
+    specular *= any(diffuse);
+    
     // Combine light and return
     // Multiple specular by color? No right answer
     return ((diffuse * color) + specular) * 

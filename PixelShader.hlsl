@@ -30,6 +30,7 @@ cbuffer ExternalData : register(b0)
 // t for textures, s for samplers
 Texture2D SurfaceTexture  : register(t0);
 Texture2D SpecularMap     : register(t1);
+Texture2D NormalMap       : register(t2);
 
 SamplerState BasicSampler : register(s0);
 
@@ -45,15 +46,12 @@ SamplerState BasicSampler : register(s0);
 float4 main(VertexToPixel input) : SV_TARGET
 {
     // --- Mess with input ---
-    // Gotta normalize those normals, since they get interpolated
-    // across the face of triangles, making them not unit vectors
-    input.normal = normalize(input.normal);
     
     // Get extremely weird with voronoi, scale the
     // UVs by voronoi, angled with time, and with 3 cell density
     // Since it's just UVs, there's an ugly seam along the
     // 3D objects, but that's just how UVs work
-    input.uv *= Voronoi2D(input.uv, time, 3);
+    //input.uv *= Voronoi2D(input.uv, time, 3);
     
     // Scale and offset uv coordinates by given cbuffer values
     input.uv = (input.uv * uvScale) + uvOffset;
@@ -65,6 +63,30 @@ float4 main(VertexToPixel input) : SV_TARGET
     
     // Sample specular map to get the scale value
     float specScale = SpecularMap.Sample(BasicSampler, input.uv).r;
+    
+    // TODO: Get a blank specular map texture to give
+    // to materials that do not have one so as not to
+    // be dumb like this. Would it just be a white image?
+    specScale = 1;
+    
+    // Sample normal map, converting from 0 - 1 into -1 - 1
+    float3 unpackedNormal = NormalMap.Sample(BasicSampler, input.uv).rgb * 2 - 1;
+    
+    // --- Normal Map Calculations ---
+    // Gotta normalize those normals, since they get interpolated
+    // across the face of triangles, making them not unit vectors
+    unpackedNormal = normalize(unpackedNormal);
+    float3 n = normalize(input.normal);
+    float3 t = normalize(input.tangent);
+    
+    // Gram-Schmidt for orthonormalize (ensure 90 degrees)
+    t = normalize(t - n * dot(t, n));
+    float3 b = cross(t, n);     // Calculate bitangent
+    
+    // Create rotation matrix and apply it to the normal
+    float3x3 tbn = float3x3(t, b, n);
+    input.normal = mul(unpackedNormal, tbn);
+    
     
     // --- Calculate Light ---
     // Ambient is universally applied once
