@@ -48,6 +48,13 @@ struct VertexToPixel
     float3 worldPosition : POSITION;
 };
 
+// Struct representing data from 
+// sky vertex shader to sky pixel shader.
+struct SkyVertexToPixel
+{
+    float4 position  : SV_POSITION;
+    float3 sampleDir : DIRECTION;
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // --------------------------- HELPER FUNCTIONS ----------------------------- //
