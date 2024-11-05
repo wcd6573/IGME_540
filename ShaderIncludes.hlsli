@@ -50,7 +50,7 @@ struct VertexToPixel
 
 // Struct representing data from 
 // sky vertex shader to sky pixel shader.
-struct SkyVertexToPixel
+struct VertexToPixel_Sky
 {
     float4 position  : SV_POSITION;
     float3 sampleDir : DIRECTION;
