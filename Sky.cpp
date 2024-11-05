@@ -30,7 +30,26 @@ Sky::Sky(const wchar_t* right,
 	  skyMesh(_skyMesh),
 	  samplerOptions(_samplerOptions)
 {
+	// Call helper method provided by Prof. Chris Cascioli
 	skySRV = CreateCubemap(right, left, up, down, front, back);
+
+	// Set up Rasterizer State, zeroed out to start
+	D3D11_RASTERIZER_DESC rastDesc = {};
+	rastDesc.FillMode = D3D11_FILL_SOLID;
+	rastDesc.CullMode = D3D11_CULL_FRONT;
+	rastDesc.DepthClipEnable = true;
+
+	// Actually create the RasterizerState
+	Graphics::Device->CreateRasterizerState(
+		&rastDesc, skyRasterState.GetAddressOf());
+
+	// Set up Depth Stencil State, zeroed out to start
+	D3D11_DEPTH_STENCIL_DESC depthDesc = {};
+	depthDesc.DepthEnable = true;
+	depthDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	Graphics::Device->CreateDepthStencilState(
+		&depthDesc, skyDepthState.GetAddressOf());
 }
 
 // --------------------------------------------------------
