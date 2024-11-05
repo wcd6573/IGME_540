@@ -39,6 +39,10 @@ public:
 	void SetBuffersAndDraw();
 
 private:
+	// Helper method provided by Chris Cascioli
+	void CalculateTangents(Vertex* verts, int numVerts, 
+		unsigned int* indices, int numIndices);
+
 	// Helper method for creating vertex and index buffers
 	void CreateBuffers(Vertex* vertices, size_t _vertexCount,
 		UINT* indices, size_t _indexCount);
