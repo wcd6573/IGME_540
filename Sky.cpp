@@ -53,6 +53,39 @@ Sky::Sky(const wchar_t* right,
 }
 
 // --------------------------------------------------------
+// Draw method for the Sky, which takes in a Camera object
+// to get view and projection matrices. Sets the proper
+// render states, draws, then resets those render states.
+// --------------------------------------------------------
+void Sky::Draw(std::shared_ptr<Camera> cam)
+{
+	// --- Change necessary render states ---
+	Graphics::Context->RSSetState(skyRasterState.Get());
+	Graphics::Context->OMSetDepthStencilState(skyDepthState.Get(), 0);
+	
+	// --- Prepare shaders ---
+	skyVS->SetShader();
+	skyPS->SetShader();
+
+	// Vertex shader data
+	skyVS->SetMatrix4x4("view", cam->GetViewMatrix());
+	skyVS->SetMatrix4x4("projection", cam->GetProjectionMatrix());
+	skyVS->CopyAllBufferData();
+
+	// Pixel shader data
+	skyPS->SetSamplerState("BasicSampler", samplerOptions);
+	skyPS->SetShaderResourceView("CubeMap", skySRV);
+	skyPS->CopyAllBufferData();
+
+	// --- Draw the mesh ---
+	skyMesh->SetBuffersAndDraw();
+
+	// --- Reset render states ---
+	Graphics::Context->RSSetState(0);	// 0 sets to default
+	Graphics::Context->OMSetDepthStencilState(0, 0);
+}
+
+// --------------------------------------------------------
 // Author: Chris Cascioli
 // Purpose: Creates a cube map on the GPU from 6 individual textures
 // 

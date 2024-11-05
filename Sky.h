@@ -26,6 +26,8 @@ public:
 		std::shared_ptr<Mesh> _skyMesh,
 		Microsoft::WRL::ComPtr<ID3D11SamplerState> _samplerOptions);
 	
+	void Draw(std::shared_ptr<Camera> cam);
+
 private:
 	// ComPtrs for ID3D11 resources needed to draw the sky
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerOptions;
