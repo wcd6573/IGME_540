@@ -1,6 +1,6 @@
 /*
 William Duprey
-10/29/24
+11/23/24
 Pixel Shader
 Modified from starter code provided by Prof. Chris Cascioli
 */
@@ -59,6 +59,7 @@ float4 main(VertexToPixel input) : SV_TARGET
     // --- Sample Textures ---
     // Sample texture to get the proper surface color
     float3 surfaceColor = SurfaceTexture.Sample(BasicSampler, input.uv).rgb;
+    surfaceColor = pow(surfaceColor, 2.2f); // Un-gamma-correct
     surfaceColor *= colorTint;  // Tint using provided value
     
     // Sample specular map to get the scale value
@@ -114,6 +115,6 @@ float4 main(VertexToPixel input) : SV_TARGET
         }
     }
     
-    // Sum up all the light, and return it
-    return float4(totalLight, 1);
+    // Perform gamma correction and return the color
+    return float4(pow(totalLight, 1.0f / 2.2f), 1);
 }

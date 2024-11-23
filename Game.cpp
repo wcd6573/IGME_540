@@ -172,35 +172,35 @@ void Game::LoadShadersMaterialsMeshes()
 
 	// Load textures
 	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
-		FixPath(L"../../Assets/Textures/brokentiles.png").c_str(), 
+		FixPath(L"../../Assets/Textures/Old/brokentiles.png").c_str(), 
 		0, brokenTilesSRV.GetAddressOf());
 	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
-		FixPath(L"../../Assets/Textures/brokentiles_specular.png").c_str(),
+		FixPath(L"../../Assets/Textures/Old/brokentiles_specular.png").c_str(),
 		0, brokenTilesSpecSRV.GetAddressOf());
 	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
-		FixPath(L"../../Assets/Textures/rustymetal.png").c_str(),
+		FixPath(L"../../Assets/Textures/Old/rustymetal.png").c_str(),
 		0, rustyMetalSRV.GetAddressOf());
 	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
-		FixPath(L"../../Assets/Textures/rustymetal_specular.png").c_str(),
+		FixPath(L"../../Assets/Textures/Old/rustymetal_specular.png").c_str(),
 		0, rustyMetalSpecSRV.GetAddressOf());
 
 	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
-		FixPath(L"../../Assets/Textures/rock.png").c_str(),
+		FixPath(L"../../Assets/Textures/Old/rock.png").c_str(),
 		0, rockSRV.GetAddressOf());
 	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
-		FixPath(L"../../Assets/Textures/rock_normals.png").c_str(),
+		FixPath(L"../../Assets/Textures/Old/rock_normals.png").c_str(),
 		0, rockNormalsSRV.GetAddressOf());
 	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
-		FixPath(L"../../Assets/Textures/cobblestone.png").c_str(),
+		FixPath(L"../../Assets/Textures/Old/cobblestone.png").c_str(),
 		0, cobblestoneSRV.GetAddressOf());
 	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
-		FixPath(L"../../Assets/Textures/cobblestone_normals.png").c_str(),
+		FixPath(L"../../Assets/Textures/Old/cobblestone_normals.png").c_str(),
 		0, cobblestoneNormalsSRV.GetAddressOf());
 	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
-		FixPath(L"../../Assets/Textures/cushion.png").c_str(),
+		FixPath(L"../../Assets/Textures/Old/cushion.png").c_str(),
 		0, cushionSRV.GetAddressOf());
 	CreateWICTextureFromFile(Graphics::Device.Get(), Graphics::Context.Get(),
-		FixPath(L"../../Assets/Textures/cushion_normals.png").c_str(),
+		FixPath(L"../../Assets/Textures/Old/cushion_normals.png").c_str(),
 		0, cushionNormalsSRV.GetAddressOf());
 
 	// Create sampler state
