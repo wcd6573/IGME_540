@@ -48,35 +48,6 @@ struct Light
     float2 Padding; // Pad to hit the 16-byte boundary
 };
 
-////////////////////////////////////////////////////////////////////////////////
-// -------------------------- LIGHT CALCULATIONS ---------------------------- //
-////////////////////////////////////////////////////////////////////////////////
-float3 calculateDiffuse(float3 normal, float3 toLight)
-{
-    return saturate(dot(normal, toLight));
-}
-
-float3 calculateSpecular(float3 normal, float3 toLight,
-    float3 toCam, float roughness)
-{
-    // Calculate perfect reflection vector
-    float3 reflVec = reflect(-toLight, normal);
-    float specExp = (1.0f - roughness) * MAX_SPECULAR_EXPONENT;
-
-    
-    // Return final calculated light
-    return pow(saturate(dot(toCam, reflVec)), specExp);
-}
-
-// Attenuation function with non-linear falloff, and
-// returns 0 when outside the light's range
-float attenuate(Light light, float3 worldPos)
-{
-    float dist = distance(light.Position, worldPos);
-    float att = saturate(1.0f - (dist * dist / (light.Range * light.Range)));
-    return att * att;
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // --------------------------- PBR CALCULATIONS ----------------------------- //
@@ -190,13 +161,56 @@ float3 MicrofacetBRDF(float3 n, float3 l, float3 v,
     return specularResult * max(dot(n, l), 0);
 }
 
+// Calculates light using the physically-based rendering model.
+float3 CalculateLightPBR(float3 lightColor, float lightIntensity, 
+    float3 normal, float3 toLight, float3 toCam, float3 surfaceColor, 
+    float3 specColor, float roughness, float metalness)
+{
+    // Calculate diffuse and specular light
+    float diff = DiffusePBR(normal, toLight);
+    float3 F;   // Used to store Fresnel from specular calculation
+    float3 spec = MicrofacetBRDF(normal, toLight, toCam, roughness, specColor, F);
+
+    // Conserve energy and cut diffuse for metals
+    float3 balancedDiff = DiffuseEnergyConserve(diff, F, metalness);
+    
+    // Combine final diffuse and specular values, and return
+    return (balancedDiff * surfaceColor + spec) * lightIntensity * lightColor;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
-// ----------------------------- LIGHT TYPES -------------------------------- //
+// -------------------------- NON-PBR FUNCTIONS ------------------------------- //
 ////////////////////////////////////////////////////////////////////////////////
-float3 directionalLight(Light light, float3 color, float3 normal, 
-    float3 cameraPos, float3 worldPos, float roughness, float specScale)
+float3 calculateDiffuse(float3 normal, float3 toLight)
 {
+    return saturate(dot(normal, toLight));
+}
+
+float3 calculateSpecular(float3 normal, float3 toLight,
+    float3 toCam, float roughness)
+{
+    // Calculate perfect reflection vector
+    float3 reflVec = reflect(-toLight, normal);
+    float specExp = (1.0f - roughness) * MAX_SPECULAR_EXPONENT;
+
+    
+    // Return final calculated light
+    return pow(saturate(dot(toCam, reflVec)), specExp);
+}
+
+// Attenuation function with non-linear falloff, and
+// returns 0 when outside the light's range
+float attenuate(Light light, float3 worldPos)
+{
+    float dist = distance(light.Position, worldPos);
+    float att = saturate(1.0f - (dist * dist / (light.Range * light.Range)));
+    return att * att;
+}
+
+float3 directionalLightOld(Light light, float3 color, float3 normal, 
+    float3 cameraPos, float3 worldPos, float roughness, float specScale)
+{   
     // --- Diffuse ---
     float3 toLight = normalize(-light.Direction);
     float3 diffuse = calculateDiffuse(normal, toLight);
@@ -217,12 +231,12 @@ float3 directionalLight(Light light, float3 color, float3 normal,
     specular *= any(diffuse);
     
     // Combine light and return
-    // Multiple specular by color? No right answer
+    // Multiply specular by color? No right answer
     return ((diffuse * color) + specular) * 
         light.Intensity * light.Color;
 }
 
-float3 pointLight(Light light, float3 color, float3 normal,
+float3 pointLightOld(Light light, float3 color, float3 normal,
     float3 cameraPos, float3 worldPos, float roughness, float specScale)
 {
     // --- Diffuse ---

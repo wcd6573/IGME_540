@@ -86,31 +86,53 @@ float4 main(VertexToPixel input) : SV_TARGET
     // specular color where metalness = 1
     // lerp -- metal is usually 0 or 1, but might be in between because 
     // of linear texture sampling, so lerp specular color to match
-    float specularColor = lerp(F0_NON_METAL, albedoColor.rgb, metalness);
+    float3 specularColor = lerp(F0_NON_METAL, albedoColor.rgb, metalness);
     
     // --- Calculate Light ---
-    float3 totalLight = albedoColor;
+    float3 totalLight;
     
-    // Loop through lights
+    // Calculate vector to camera, as it
+    // does not change between lights
+    float3 toCam = normalize(cameraPosition - input.worldPosition);
+    float3 toLight;  // Changes based on light type
+    
+    // Loop through lights 
     for (int i = 0; i < NUM_LIGHTS; i++)
     {
         Light light = lights[i];
-        light.Direction = normalize(light.Direction);
         
         switch (light.Type)
         {
             case LIGHT_TYPE_DIRECTIONAL:
-                totalLight += directionalLight(light, albedoColor, input.normal,
-                    cameraPosition, input.worldPosition, roughness, specScale);
+                // Directional light has a direction,
+                // use that to get vector to light
+                toLight = normalize(-light.Direction);
                 break;
+            
             case LIGHT_TYPE_POINT:
-                totalLight += pointLight(light, albedoColor, input.normal,
-                    cameraPosition, input.worldPosition, roughness, specScale);
+                // Point light has no direction,
+                // calculate it using its position
+                // and the pixel's world position
+                toLight = normalize(light.Position - input.worldPosition);
                 break;
+            
             case LIGHT_TYPE_SPOT:
                 // Unimplemented
+                toLight = float3(0, 0, 1);
                 break;
         }
+        
+        totalLight += CalculateLightPBR(
+            light.Color, 
+            light.Intensity, 
+            input.normal, 
+            toLight, 
+            toCam, 
+            albedoColor, 
+            specularColor, 
+            roughness, 
+            metalness
+        );
     }
     
     // Perform gamma correction and return the color
