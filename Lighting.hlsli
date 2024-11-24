@@ -10,7 +10,7 @@ Shader Lighting Header
 ////////////////////////////////////////////////////////////////////////////////
 // -------------------------------- CONSTANTS ------------------------------- //
 ////////////////////////////////////////////////////////////////////////////////
-#define MAX_SPECULAR_EXPONENT 256.0f
+#define MAX_SPECULAR_EXPONENT 256.0f  
 #define LIGHT_TYPE_DIRECTIONAL	0
 #define LIGHT_TYPE_POINT		1
 #define LIGHT_TYPE_SPOT			2
@@ -18,7 +18,7 @@ Shader Lighting Header
 // Use 'static const' or '#define', what's the difference?
 // Constant Fresnel value for non-metals
 // (like glass and plastic)
-static const float f0_NON_METAL = 0.04f;
+static const float F0_NON_METAL = 0.04f;
 
 // Minimum roughness for when spec distribution 
 // function denominator goes to 0

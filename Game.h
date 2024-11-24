@@ -57,7 +57,6 @@ private:
 	std::vector<std::shared_ptr<Camera>> cameras;
 	std::vector<std::shared_ptr<Material>> materials;
 	std::vector<Light> lights;
-	DirectX::XMFLOAT3 ambientColor;
 	std::shared_ptr<Sky> sky;
 
 	// One camera to rule them all

@@ -18,7 +18,6 @@ cbuffer ExternalData : register(b0)
     float roughness;
     float3 colorTint;
     float3 cameraPosition;
-    float3 ambientColor;
     
     float2 uvScale;
     float2 uvOffset;
@@ -28,9 +27,10 @@ cbuffer ExternalData : register(b0)
 }
 
 // t for textures, s for samplers
-Texture2D SurfaceTexture  : register(t0);
-Texture2D SpecularMap     : register(t1);
-Texture2D NormalMap       : register(t2);
+Texture2D Albedo        : register(t0);
+Texture2D NormalMap     : register(t1);
+Texture2D RoughnessMap  : register(t2);
+Texture2D MetalnessMap  : register(t3);
 
 SamplerState BasicSampler : register(s0);
 
@@ -45,35 +45,20 @@ SamplerState BasicSampler : register(s0);
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-    // --- Mess with input ---
-    
-    // Get extremely weird with voronoi, scale the
-    // UVs by voronoi, angled with time, and with 3 cell density
-    // Since it's just UVs, there's an ugly seam along the
-    // 3D objects, but that's just how UVs work
-    //input.uv *= Voronoi2D(input.uv, time, 3);
-    
+    // --- Adjust UVs ---
     // Scale and offset uv coordinates by given cbuffer values
     input.uv = (input.uv * uvScale) + uvOffset;
     
-    // --- Sample Textures ---
+    // --- Sample Albedo ---
     // Sample texture to get the proper surface color
-    float3 surfaceColor = SurfaceTexture.Sample(BasicSampler, input.uv).rgb;
-    surfaceColor = pow(surfaceColor, 2.2f); // Un-gamma-correct
-    surfaceColor *= colorTint;  // Tint using provided value
+    float3 albedoColor = Albedo.Sample(BasicSampler, input.uv).rgb;
+    albedoColor = pow(albedoColor, 2.2f); // Un-gamma-correct
+    albedoColor *= colorTint;  // Tint using provided value
     
-    // Sample specular map to get the scale value
-    float specScale = SpecularMap.Sample(BasicSampler, input.uv).r;
-    
-    // TODO: Get a blank specular map texture to give
-    // to materials that do not have one so as not to
-    // be dumb like this. Would it just be a white image?
-    specScale = 1;
-    
-    // Sample normal map, converting from 0 - 1 into -1 - 1
+    // --- Sample Normal Map ---
+    // Convert normals from 0 to 1 into -1 to 1
     float3 unpackedNormal = NormalMap.Sample(BasicSampler, input.uv).rgb * 2 - 1;
     
-    // --- Normal Map Calculations ---
     // Gotta normalize those normals, since they get interpolated
     // across the face of triangles, making them not unit vectors
     unpackedNormal = normalize(unpackedNormal);
@@ -88,10 +73,23 @@ float4 main(VertexToPixel input) : SV_TARGET
     float3x3 tbn = float3x3(t, b, n);
     input.normal = mul(unpackedNormal, tbn);
     
+    // --- Sample Roughness Map ---
+    // Only a single value, so just grab the r channel
+    float roughness = RoughnessMap.Sample(BasicSampler, input.uv).r;
+    
+    // --- Sample Metalness Map ---
+    // Same as roughness, just one value, so just use r
+    float metalness = MetalnessMap.Sample(BasicSampler, input.uv).r;
+    
+    // --- Specular Color Determination ---
+    // Assume albedo texture is actually holding 
+    // specular color where metalness = 1
+    // lerp -- metal is usually 0 or 1, but might be in between because 
+    // of linear texture sampling, so lerp specular color to match
+    float specularColor = lerp(F0_NON_METAL, albedoColor.rgb, metalness);
     
     // --- Calculate Light ---
-    // Ambient is universally applied once
-    float3 totalLight = ambientColor * surfaceColor;
+    float3 totalLight = albedoColor;
     
     // Loop through lights
     for (int i = 0; i < NUM_LIGHTS; i++)
@@ -102,11 +100,11 @@ float4 main(VertexToPixel input) : SV_TARGET
         switch (light.Type)
         {
             case LIGHT_TYPE_DIRECTIONAL:
-                totalLight += directionalLight(light, surfaceColor, input.normal,
+                totalLight += directionalLight(light, albedoColor, input.normal,
                     cameraPosition, input.worldPosition, roughness, specScale);
                 break;
             case LIGHT_TYPE_POINT:
-                totalLight += pointLight(light, surfaceColor, input.normal,
+                totalLight += pointLight(light, albedoColor, input.normal,
                     cameraPosition, input.worldPosition, roughness, specScale);
                 break;
             case LIGHT_TYPE_SPOT:

@@ -74,9 +74,6 @@ void Game::Initialize()
 	bgColor[2] = 0.75f;	// Flower
 	bgColor[3] = 1.0f;	// Blue
 
-	// Set ambient color of light
-	ambientColor = XMFLOAT3(0.1f, 0.1f, 0.25f);
-
 	// --- Create a bunch of cameras ---
 	// Standard, default camera
 	cameras.push_back(std::make_shared<Camera>(
@@ -481,7 +478,6 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Set a time value (if there is one)
 		std::shared_ptr<SimplePixelShader> ps = entities[i]->GetMaterial()->GetPixelShader();
 		ps->SetFloat("time", totalTime);
-		ps->SetFloat3("ambientColor", ambientColor);
 		ps->SetData("lights", &lights[0], sizeof(Light) * (int)lights.size());
 
 		entities[i]->Draw(activeCam);
@@ -726,8 +722,6 @@ void Game::BuildUI()
 
 	if (ImGui::TreeNode("Lights")) 
 	{
-		ImGui::ColorEdit3("Ambient Light", &ambientColor.x);
-
 		for (int i = 0; i < lights.size(); i++)
 		{
 			// Push current ID so that multiple lights
