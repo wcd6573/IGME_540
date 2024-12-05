@@ -34,7 +34,7 @@ Texture2D MetalnessMap  : register(t3);
 Texture2D ShadowMap     : register(t4);
 
 SamplerState BasicSampler : register(s0);
-//SamplerComparisonState ShadowSampler : register(s1);
+SamplerComparisonState ShadowSampler : register(s1);
 
 // --------------------------------------------------------
 // The entry point (main method) for our pixel shader
@@ -61,13 +61,8 @@ float4 main(VertexToPixel input) : SV_TARGET
     
     // Grab the distances we need: light-to-pixel and closest-surface
     float distToLight = input.shadowMapPos.z;
-    float distShadowMap = ShadowMap.Sample(BasicSampler, shadowUV).r;
-
-    // For testing, just return black where there are shadows
-    if (distShadowMap < distToLight)
-    {
-        return float4(0, 0, 0, 1);
-    }
+    float shadowAmount = ShadowMap.SampleCmpLevelZero(
+        ShadowSampler, shadowUV, distToLight).r;
     
     // --- Sample Albedo ---
     // Sample texture to get the proper surface color
@@ -142,7 +137,8 @@ float4 main(VertexToPixel input) : SV_TARGET
                 break;
         }
         
-        totalLight += CalculateLightPBR(
+        // Calculate light
+        float3 lightResult = CalculateLightPBR(
             light.Color, 
             light.Intensity, 
             input.normal, 
@@ -153,6 +149,14 @@ float4 main(VertexToPixel input) : SV_TARGET
             roughness, 
             metalness
         );
+        
+        // Apply shadows to only the first light
+        if (i == 0)
+        {
+            lightResult *= shadowAmount;
+        }
+
+        totalLight += lightResult;
     }
     
     // Perform gamma correction and return the color

@@ -355,7 +355,7 @@ void Game::CreateEntities()
 		meshes[6], materials[6]));
 
 	// Scale the floor up
-	entities[0]->GetTransform()->SetScale(10, 1, 10);
+	entities[0]->GetTransform()->SetScale(20, 1, 20);
 
 	// Various 3D shapes for fun shadow things
 	entities.push_back(std::make_shared<GameEntity>(
@@ -395,11 +395,11 @@ void Game::CreateLights()
 	directional2.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
 	directional2.Intensity = 1.0f;
 
-	//Light directional3 = {};
-	//directional3.Type = LIGHT_TYPE_DIRECTIONAL;
-	//directional3.Direction = XMFLOAT3(-1.0f, 1.0f, -0.5f);
-	//directional3.Color = XMFLOAT3(0.0f, 0.0f, 1.0f);
-	//directional3.Intensity = 1.0f;
+	Light directional3 = {};
+	directional3.Type = LIGHT_TYPE_DIRECTIONAL;
+	directional3.Direction = XMFLOAT3(0.0f, -1.0f, -1.0f);
+	directional3.Color = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	directional3.Intensity = 1.0f;
 	
 	//Light point1 = {};
 	//point1.Type = LIGHT_TYPE_POINT;
@@ -417,7 +417,7 @@ void Game::CreateLights()
 
 	//lights.push_back(directional1);
 	lights.push_back(directional2);
-	//lights.push_back(directional3);
+	lights.push_back(directional3);
 	//lights.push_back(point1);
 	//lights.push_back(point2);
 
@@ -486,9 +486,27 @@ void Game::CreateShadowMapResources()
 		&srvDesc,
 		shadowSRV.GetAddressOf());
 
+	// Create shadow rasterizer for depth biasing
+	D3D11_RASTERIZER_DESC shadowRastDesc = {};
+	shadowRastDesc.FillMode = D3D11_FILL_SOLID;
+	shadowRastDesc.CullMode = D3D11_CULL_BACK;
+	shadowRastDesc.DepthClipEnable = true;
+	shadowRastDesc.DepthBias = 1000; // Min. precision, not world units
+	shadowRastDesc.SlopeScaledDepthBias = 1.0f; // Bias based on slope
+	Graphics::Device->CreateRasterizerState(&shadowRastDesc, &shadowRasterizer);
+
+	// Set up sampler for comparison
+	D3D11_SAMPLER_DESC shadowSampDesc = {};
+	shadowSampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+	shadowSampDesc.ComparisonFunc = D3D11_COMPARISON_LESS;
+	shadowSampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.BorderColor[0] = 1.0f; // Only need the first component
+	Graphics::Device->CreateSamplerState(&shadowSampDesc, &shadowSampler);
+
 	// Set up light view matrix
 	// Assume first light is the shadow-casting one
-	
 	XMVECTOR lightDirection = XMVector3Normalize(
 		XMLoadFloat3(&lights[0].Direction));
 	XMMATRIX lightView = XMMatrixLookToLH(
@@ -578,8 +596,9 @@ void Game::Draw(float deltaTime, float totalTime)
 		std::shared_ptr<SimplePixelShader> ps = entities[i]->GetMaterial()->GetPixelShader();
 		ps->SetFloat("time", totalTime);
 		ps->SetData("lights", &lights[0], sizeof(Light) * (int)lights.size());
-		ps->SetInt("lightCount", lights.size());
+		ps->SetInt("lightCount", (int)lights.size());
 		ps->SetShaderResourceView("ShadowMap", shadowSRV);
+		ps->SetSamplerState("ShadowSampler", shadowSampler);
 
 		entities[i]->Draw(activeCam);
 	}
@@ -625,7 +644,7 @@ void Game::RenderShadowMap()
 	// Clear shadow map
 	//Graphics::Context->OMSetRenderTargets(0, 0, shadowDSV.Get());
 	Graphics::Context->ClearDepthStencilView(shadowDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
-	//Graphics::Context->RSSetState(shadowRasterizer.Get());
+	Graphics::Context->RSSetState(shadowRasterizer.Get());
 
 	// Set up the output merger state
 	ID3D11RenderTargetView* nullRTV = {};
@@ -664,6 +683,7 @@ void Game::RenderShadowMap()
 		1,
 		Graphics::BackBufferRTV.GetAddressOf(),
 		Graphics::DepthBufferDSV.Get());
+	Graphics::Context->RSSetState(0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
