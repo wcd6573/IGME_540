@@ -102,6 +102,8 @@ void Game::Initialize()
 		XM_PI - 0.1f
 	));
 	activeCam = cameras[0];
+
+	moveEntities = true;
 }
 
 
@@ -342,31 +344,33 @@ void Game::LoadShadersMaterialsMeshes()
 void Game::CreateEntities()
 {
 	// --- Create a bunch of entities ---
-	// For now, just spheres, one of each material
+	// Wood floor (quad) to showcase shadows
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[3], materials[0]));
+		meshes[6], materials[6]));
+
+	// Scale the floor up
+	entities[0]->GetTransform()->SetScale(10, 1, 10);
+
+	// Various 3D shapes for fun shadow things
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[3], materials[1]));
+		meshes[0], materials[0]));	// Cube
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[3], materials[2]));
+		meshes[1], materials[1]));	// Cylinder
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[3], materials[3]));
+		meshes[2], materials[2]));	// Helix
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[3], materials[4]));
+		meshes[3], materials[3]));	// Sphere
 	entities.push_back(std::make_shared<GameEntity>(
-		meshes[3], materials[5]));
-	entities.push_back(std::make_shared<GameEntity>(
-		meshes[3], materials[6]));
+		meshes[4], materials[4]));	// Torus
 	
-	// Move those entities, copying the positions from
-	// the demo code to more easily verify my lights work
-	entities[0]->GetTransform()->MoveAbsolute(-9, 0, 0);
-	entities[1]->GetTransform()->MoveAbsolute(-6, 0, 0);
-	entities[2]->GetTransform()->MoveAbsolute(-3, 0, 0);
-	entities[3]->GetTransform()->MoveAbsolute(0, 0, 0);
-	entities[4]->GetTransform()->MoveAbsolute(3, 0, 0);
-	entities[5]->GetTransform()->MoveAbsolute(6, 0, 0);
-	entities[6]->GetTransform()->MoveAbsolute(9, 0, 0);
+	// Move those entities around
+	entities[0]->GetTransform()->MoveAbsolute(0, -0.5f, 0);
+	entities[1]->GetTransform()->MoveAbsolute(-6, 1.5f, -1);
+	entities[2]->GetTransform()->MoveAbsolute(-3, 1.5f, 1);
+	entities[3]->GetTransform()->MoveAbsolute(1.5f, 1.5f, -3);
+	entities[4]->GetTransform()->MoveAbsolute(1.5f, 1.5f, 0);
+	entities[5]->GetTransform()->MoveAbsolute(6, 1.5f, 0);	
+	entities[5]->GetTransform()->Rotate(-XM_PIDIV4, 0, 0);
 }
 
 void Game::CreateLights()
@@ -448,9 +452,12 @@ void Game::Update(float deltaTime, float totalTime)
 	BuildUI();
 
 	// --- Move game entities ---
-	for (unsigned int i = 0; i < entities.size(); ++i)
+	if (moveEntities) 
 	{
-		entities[i]->GetTransform()->Rotate(0, deltaTime, 0);
+		entities[1]->GetTransform()->Rotate(deltaTime, 0, -deltaTime);
+		entities[2]->GetTransform()->Rotate(0, 0, deltaTime);
+		entities[3]->GetTransform()->SetPosition(2 + (cos(totalTime)), 1.5f, -3);
+		entities[5]->GetTransform()->Rotate(0, deltaTime, 0);
 	}
 
 	// Example input checking: Quit if the escape key is pressed
@@ -599,6 +606,8 @@ void Game::BuildUI()
 	// Create a collapsible header for the Game Entities
 	if (ImGui::TreeNode("Game Entities"))
 	{
+		ImGui::Checkbox("Move Entities", &moveEntities);
+
 		// For every entity, make a collapsible header
 		for (int i = 0; i < entities.size(); ++i) 
 		{

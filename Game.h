@@ -1,5 +1,5 @@
 // William Duprey
-// 10/16/24
+// 12/4/24
 // Game Class Header
 // Modified from starter code provided by Prof. Chris Cascioli
 
@@ -47,6 +47,9 @@ private:
 	// Whether the ImGui default demo window is displayed
 	bool showDemoUI;
 
+	// Whether to move entities around (for shadow mapping testing)
+	bool moveEntities;	
+
 	// 4-element array of floats for holding the background color
 	// TODO: Use XMFLOAT4 instead of being weird like this
 	std::shared_ptr<float[]> bgColor;
@@ -57,6 +60,7 @@ private:
 	std::vector<std::shared_ptr<Camera>> cameras;
 	std::vector<std::shared_ptr<Material>> materials;
 	std::vector<Light> lights;
+
 	std::shared_ptr<Sky> sky;
 
 	// One camera to rule them all
