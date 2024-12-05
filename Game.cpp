@@ -1,5 +1,5 @@
 // William Duprey
-// 11/23/24
+// 12/4/24
 // Game Class Implementation
 // Modified from starter code provided by Prof. Chris Cascioli
 
@@ -51,6 +51,7 @@ void Game::Initialize()
 	LoadShadersMaterialsMeshes();
 	CreateEntities();
 	CreateLights();
+	CreateShadowMapResources();
 
 	// Set initial graphics API state
 	//  - These settings persist until we change them
@@ -104,6 +105,10 @@ void Game::Initialize()
 	activeCam = cameras[0];
 
 	moveEntities = true;
+
+	// Shadow mapping fields
+	shadowMapResolution = 1024;	// Power of 2
+	lightProjectionSize = 10.0f;
 }
 
 
@@ -424,6 +429,73 @@ void Game::CreateLights()
 			);
 		}
 	}
+}
+
+// --------------------------------------------------------
+// Helper method for setting up shadow mapping stuff.
+// --------------------------------------------------------
+void Game::CreateShadowMapResources()
+{
+	// Reset existing API objects
+	//shadowOptions.ShadowDSV.Reset();
+	//shadowOptions.ShadowSRV.Reset();
+	shadowSampler.Reset();
+	shadowRasterizer.Reset();
+
+	
+
+	// Create the actual texture that will be the shadow map
+	D3D11_TEXTURE2D_DESC shadowDesc = {};
+	shadowDesc.Width = shadowMapResolution;
+	shadowDesc.Height = shadowMapResolution;
+	shadowDesc.ArraySize = 1;
+	shadowDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	shadowDesc.CPUAccessFlags = 0;
+	shadowDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+	shadowDesc.MipLevels = 1;
+	shadowDesc.MiscFlags = 0;
+	shadowDesc.SampleDesc.Count = 1;
+	shadowDesc.SampleDesc.Quality = 0;
+	shadowDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> shadowTexture;
+	Graphics::Device->CreateTexture2D(&shadowDesc, 0, shadowTexture.GetAddressOf());
+
+	// Create the depth / stencil view
+	D3D11_DEPTH_STENCIL_VIEW_DESC shadowDSDesc = {};
+	shadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	shadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	shadowDSDesc.Texture2D.MipSlice = 0;
+	Graphics::Device->CreateDepthStencilView(
+		shadowTexture.Get(),
+		&shadowDSDesc,
+		shadowDSV.GetAddressOf());
+
+	// Create the SRV for the shadow map
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	Graphics::Device->CreateShaderResourceView(
+		shadowTexture.Get(),
+		&srvDesc,
+		shadowSRV.GetAddressOf());
+
+	// Set up light view matrix
+	// Assume first light is the shadow-casting one
+	XMVECTOR lightDirection = XMLoadFloat3(&lights[0].Direction);
+	XMMATRIX lightView = XMMatrixLookToLH(
+		-lightDirection * 20,		// Position: "Backing up" 20 units from origin
+		lightDirection,				// Direction: light's direction
+		XMVectorSet(0, 1, 0, 0));	// Up: World up vector (Y axis)
+
+	// Set up light projection matrix
+	XMMATRIX lightProjection = XMMatrixOrthographicLH(
+		lightProjectionSize,	// Width
+		lightProjectionSize,	// Height
+		1.0f,					// Near plane
+		100.0f);				// Far plane
 }
 
 // --------------------------------------------------------

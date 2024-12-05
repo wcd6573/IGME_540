@@ -39,6 +39,7 @@ private:
 	void LoadShadersMaterialsMeshes();
 	void CreateEntities();
 	void CreateLights();
+	void CreateShadowMapResources();
 
 	// ImGui helper methods
 	void NewFrameUI(float deltaTime);
@@ -71,5 +72,15 @@ private:
 	// the actual process of binding, but I'm too
 	// tired to find it right now)
 	std::shared_ptr<Camera> activeCam;
+
+	// Shadow mapping fields
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> shadowDSV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowSRV;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> shadowRasterizer;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> shadowSampler;
+	DirectX::XMFLOAT4X4 lightViewMatrix;
+	DirectX::XMFLOAT4X4 lightProjectionMatrix;
+	UINT shadowMapResolution;
+	float lightProjectionSize;
 };
 
