@@ -41,6 +41,9 @@ private:
 	void CreateLights();
 	void CreateShadowMapResources();
 
+	// Draw helper methods
+	void RenderShadowMap();
+
 	// ImGui helper methods
 	void NewFrameUI(float deltaTime);
 	void BuildUI();
@@ -80,6 +83,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> shadowSampler;
 	DirectX::XMFLOAT4X4 lightViewMatrix;
 	DirectX::XMFLOAT4X4 lightProjectionMatrix;
+	std::shared_ptr<SimpleVertexShader> shadowVS;
+	
 	UINT shadowMapResolution;
 	float lightProjectionSize;
 };
