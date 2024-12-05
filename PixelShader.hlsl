@@ -15,7 +15,6 @@ Modified from starter code provided by Prof. Chris Cascioli
 // and ambient light color, all for lighting calculations
 cbuffer ExternalData : register(b0)
 {
-    float roughness;
     float3 colorTint;
     float3 cameraPosition;
     
@@ -24,6 +23,7 @@ cbuffer ExternalData : register(b0)
     float time;
     
     Light lights[NUM_LIGHTS];
+    int lightCount;
 }
 
 // t for textures, s for samplers
@@ -31,8 +31,10 @@ Texture2D Albedo        : register(t0);
 Texture2D NormalMap     : register(t1);
 Texture2D RoughnessMap  : register(t2);
 Texture2D MetalnessMap  : register(t3);
+Texture2D ShadowMap     : register(t4);
 
 SamplerState BasicSampler : register(s0);
+//SamplerComparisonState ShadowSampler : register(s1);
 
 // --------------------------------------------------------
 // The entry point (main method) for our pixel shader
@@ -49,9 +51,27 @@ float4 main(VertexToPixel input) : SV_TARGET
     // Scale and offset uv coordinates by given cbuffer values
     input.uv = (input.uv * uvScale) + uvOffset;
     
+    // --- Shadow Mapping ---
+    // Perform the perspective divide (by W) ourselves
+    input.shadowMapPos /= input.shadowMapPos.w;
+    
+    // Convert the normalized device coordinates to UVs for sampling
+    float2 shadowUV = input.shadowMapPos.xy * 0.5f + 0.5f;
+    shadowUV.y = 1 - shadowUV.y;    // Flip the Y
+    
+    // Grab the distances we need: light-to-pixel and closest-surface
+    float distToLight = input.shadowMapPos.z;
+    float distShadowMap = ShadowMap.Sample(BasicSampler, shadowUV).r;
+
+    // For testing, just return black where there are shadows
+    if (distShadowMap < distToLight)
+    {
+        return float4(0, 0, 0, 1);
+    }
+    
     // --- Sample Albedo ---
     // Sample texture to get the proper surface color
-    float3 albedoColor = Albedo.Sample(BasicSampler, input.uv).rgb;
+        float3 albedoColor = Albedo.Sample(BasicSampler, input.uv).rgb;
     albedoColor = pow(albedoColor, 2.2f); // Un-gamma-correct
     albedoColor *= colorTint;  // Tint using provided value
     
@@ -97,7 +117,7 @@ float4 main(VertexToPixel input) : SV_TARGET
     float3 toLight;  // Changes based on light type
     
     // Loop through lights 
-    for (int i = 0; i < NUM_LIGHTS; i++)
+    for (int i = 0; i < lightCount; i++)
     {
         Light light = lights[i];
         

@@ -57,7 +57,6 @@ public:
 private:
 	const char* name;
 	DirectX::XMFLOAT3 colorTint;
-	float roughness;
 
 	// Simple shader resources
 	std::shared_ptr<SimpleVertexShader> vs;

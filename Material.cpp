@@ -50,7 +50,6 @@ void Material::PrepareMaterial(std::shared_ptr<Transform> transform,
 
 	// Do the same for the pixel shader
 	ps->SetFloat3("colorTint", colorTint);
-	ps->SetFloat("roughness", roughness);
 	ps->SetFloat3("cameraPosition", camera->GetTransform()->GetPosition());
 	ps->SetFloat2("uvScale", uvScale);
 	ps->SetFloat2("uvOffset", uvOffset);

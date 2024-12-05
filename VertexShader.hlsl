@@ -15,6 +15,9 @@ cbuffer ExternalData : register(b0)
     matrix worldInvTranspose;
     matrix view;
     matrix projection;
+    
+    matrix lightView;
+    matrix lightProjection;
 }
 
 // --------------------------------------------------------
@@ -50,6 +53,10 @@ VertexToPixel main(VertexShaderInput input)
     // Multiply local position by world matrix to get world position
     output.worldPosition = mul(world, float4(input.localPosition, 1)).xyz;
 
+    // Calculate shadow map position using the light's view / projection
+    matrix shadowWVP = mul(lightProjection, mul(lightView, world));
+    output.shadowMapPos = mul(shadowWVP, float4(input.localPosition, 1.0f));
+    
     // Whatever we return will make its way through the pipeline to the
     // next programmable stage we're using (the pixel shader for now)
     return output;

@@ -371,7 +371,7 @@ void Game::CreateEntities()
 	
 	// Move those entities around
 	entities[0]->GetTransform()->MoveAbsolute(0, -0.5f, 0);
-	entities[1]->GetTransform()->MoveAbsolute(-6, 1.5f, -1);
+	entities[1]->GetTransform()->MoveAbsolute(-6, 0, -1);
 	entities[2]->GetTransform()->MoveAbsolute(-3, 1.5f, 1);
 	entities[3]->GetTransform()->MoveAbsolute(1.5f, 1.5f, -3);
 	entities[4]->GetTransform()->MoveAbsolute(1.5f, 1.5f, 0);
@@ -388,32 +388,32 @@ void Game::CreateLights()
 	//directional1.Color = XMFLOAT3(1.0f, 0.0f, 0.0f);
 	//directional1.Intensity = 1.0f;
 
-	// Primary, shadow-casting light light
+	// Primary, shadow-casting light
 	Light directional2 = {};
 	directional2.Type = LIGHT_TYPE_DIRECTIONAL;
-	directional2.Direction = XMFLOAT3(0.0f, -1.0f, -0.5f);
+	directional2.Direction = XMFLOAT3(0.0f, -1.0f, 0.5f);
 	directional2.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
 	directional2.Intensity = 1.0f;
 
-	Light directional3 = {};
-	directional3.Type = LIGHT_TYPE_DIRECTIONAL;
-	directional3.Direction = XMFLOAT3(-1.0f, 1.0f, -0.5f);
-	directional3.Color = XMFLOAT3(0.0f, 0.0f, 1.0f);
-	directional3.Intensity = 1.0f;
-
-	Light point1 = {};
-	point1.Type = LIGHT_TYPE_POINT;
-	point1.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
-	point1.Intensity = 1.0f;
-	point1.Position = XMFLOAT3(-1.5f, 0, 0);
-	point1.Range = 10.0f;
-
-	Light point2 = {};
-	point2.Type = LIGHT_TYPE_POINT;
-	point2.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
-	point2.Intensity = 0.5f;
-	point2.Position = XMFLOAT3(1.5f, 0, 0);
-	point2.Range = 10.0f;
+	//Light directional3 = {};
+	//directional3.Type = LIGHT_TYPE_DIRECTIONAL;
+	//directional3.Direction = XMFLOAT3(-1.0f, 1.0f, -0.5f);
+	//directional3.Color = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	//directional3.Intensity = 1.0f;
+	
+	//Light point1 = {};
+	//point1.Type = LIGHT_TYPE_POINT;
+	//point1.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
+	//point1.Intensity = 1.0f;
+	//point1.Position = XMFLOAT3(-1.5f, 0, 0);
+	//point1.Range = 10.0f;
+	
+	//Light point2 = {};
+	//point2.Type = LIGHT_TYPE_POINT;
+	//point2.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
+	//point2.Intensity = 0.5f;
+	//point2.Position = XMFLOAT3(1.5f, 0, 0);
+	//point2.Range = 10.0f;
 
 	//lights.push_back(directional1);
 	lights.push_back(directional2);
@@ -536,7 +536,7 @@ void Game::Update(float deltaTime, float totalTime)
 	{
 		entities[1]->GetTransform()->Rotate(deltaTime, 0, -deltaTime);
 		entities[2]->GetTransform()->Rotate(0, 0, deltaTime);
-		entities[3]->GetTransform()->SetPosition(2 + (cos(totalTime)), 1.5f, -3);
+		entities[3]->GetTransform()->SetPosition(2 + (cos(totalTime)), 2.5f, -2);
 		entities[4]->GetTransform()->SetScale(1.1f + cos(totalTime), 1.1f + sin(totalTime), 1.1f + cos(totalTime));
 		entities[5]->GetTransform()->Rotate(0, deltaTime, 0);
 	}
@@ -568,10 +568,18 @@ void Game::Draw(float deltaTime, float totalTime)
 	// --- Draw entities ---
 	for (int i = 0; i < entities.size(); ++i)
 	{
-		// Set a time value (if there is one)
+		// Set vertex shader values
+		std::shared_ptr<SimpleVertexShader> vs = entities[i]->GetMaterial()->GetVertexShader();
+		vs->SetMatrix4x4("lightView", lightViewMatrix);
+		vs->SetMatrix4x4("lightProjection", lightProjectionMatrix);
+
+		// Set pixel shader values (these statements could probably
+		// go in the Entity draw method, but I don't know)
 		std::shared_ptr<SimplePixelShader> ps = entities[i]->GetMaterial()->GetPixelShader();
 		ps->SetFloat("time", totalTime);
 		ps->SetData("lights", &lights[0], sizeof(Light) * (int)lights.size());
+		ps->SetInt("lightCount", lights.size());
+		ps->SetShaderResourceView("ShadowMap", shadowSRV);
 
 		entities[i]->Draw(activeCam);
 	}
@@ -584,6 +592,12 @@ void Game::Draw(float deltaTime, float totalTime)
 	// - These should happen exactly ONCE PER FRAME
 	// - At the very end of the frame (after drawing *everything*)
 	{
+		// Unbind shadow map to fix D3D warnings
+		// (shadow map cannot be a depth buffer 
+		// and shader resource at the same time)
+		ID3D11ShaderResourceView* nullSRVs[128] = {};
+		Graphics::Context->PSSetShaderResources(0, 128, nullSRVs);
+
 		// Draw ImGui as the last thing, before swapChain->Present()
 		ImGui::Render(); // Turns this frame's UI into renderable triangles
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen
