@@ -90,6 +90,8 @@ private:
 	float lightProjectionSize;
 
 	// --- Post process fields ---
+	int blurRadius;
+
 	// Resources shared among all post processes
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> ppSampler;
 	std::shared_ptr<SimpleVertexShader> ppVS;

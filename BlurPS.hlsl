@@ -4,6 +4,13 @@ William Duprey
 Blur Post Process Pixel Shader
 */
 
+cbuffer externalData : register(b0)
+{
+    int blurRadius;
+    float pixelWidth;
+    float pixelHeight;
+}
+
 struct VertexToPixel
 {
 	float4 position : SV_POSITION;

@@ -153,6 +153,12 @@ void Game::LoadShadersMaterialsMeshes()
 		std::make_shared<SimplePixelShader>(
 			Graphics::Device, Graphics::Context,
 			FixPath(L"Voronoi.cso").c_str());
+	ppVS = std::make_shared<SimpleVertexShader>(
+		Graphics::Device, Graphics::Context,
+		FixPath(L"FullscreenVS.cso").c_str());
+	ppPS = std::make_shared<SimplePixelShader>(
+		Graphics::Device, Graphics::Context,
+		FixPath(L"BlurPS.cso").c_str());
 
 	// Load shadow mapping vertex shader
 	shadowVS = std::make_shared<SimpleVertexShader>(
@@ -531,6 +537,8 @@ void Game::CreateShadowMapResources()
 // --------------------------------------------------------
 void Game::CreatePostProcessResources()
 {
+	blurRadius = 5;
+
 	// Sampler state for post processing
 	D3D11_SAMPLER_DESC ppSampDesc = {};
 	ppSampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -632,9 +640,15 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Clear the back buffer (erase what's on screen) and depth buffer
 	Graphics::Context->ClearRenderTargetView(Graphics::BackBufferRTV.Get(), bgColor.get());
 	Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
-
+	
 	// --- Shadow map draw setup ---
 	RenderShadowMap();
+	
+	// --- Post process... pre... process ---
+	// Clear post process render target
+	Graphics::Context->ClearRenderTargetView(ppRTV.Get(), bgColor.get());
+	// Set the post process render target
+	Graphics::Context->OMSetRenderTargets(1, ppRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
 
 	// --- Draw entities ---
 	for (int i = 0; i < entities.size(); ++i)
@@ -663,29 +677,47 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Frame END
 	// - These should happen exactly ONCE PER FRAME
 	// - At the very end of the frame (after drawing *everything*)
-	{
-		// Unbind shadow map to fix D3D warnings
-		// (shadow map cannot be a depth buffer 
-		// and shader resource at the same time)
-		ID3D11ShaderResourceView* nullSRVs[128] = {};
-		Graphics::Context->PSSetShaderResources(0, 128, nullSRVs);
+	
+	// --- Post Process ---
+	// Restore back buffer
+	Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
+	
+	// Activate shaders and bind resources
+	ppVS->SetShader();
+	ppPS->SetShader();
+	ppPS->SetShaderResourceView("Pixels", ppSRV.Get());
+	ppPS->SetSamplerState("ClampSampler", ppSampler.Get());
 
-		// Draw ImGui as the last thing, before swapChain->Present()
-		ImGui::Render(); // Turns this frame's UI into renderable triangles
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen
+	// cbuffer values for blur pixel shader
+	ppPS->SetInt("blurRadius", blurRadius);
+	ppPS->SetFloat("pixelWidth", 1.0f / Window::Width());
+	ppPS->SetFloat("pixelHeight", 1.0f / Window::Height());
 
-		// Present at the end of the frame
-		bool vsync = Graphics::VsyncState();
-		Graphics::SwapChain->Present(
-			vsync ? 1 : 0,
-			vsync ? 0 : DXGI_PRESENT_ALLOW_TEARING);
+	// Draw one triangle with UVs to perfectly cover the screen
+	Graphics::Context->Draw(3, 0);
 
-		// Re-bind back buffer and depth buffer after presenting
-		Graphics::Context->OMSetRenderTargets(
-			1,
-			Graphics::BackBufferRTV.GetAddressOf(),
-			Graphics::DepthBufferDSV.Get());
-	}
+
+	// Unbind shadow map to fix D3D warnings
+	// (shadow map cannot be a depth buffer 
+	// and shader resource at the same time)
+	ID3D11ShaderResourceView* nullSRVs[128] = {};
+	Graphics::Context->PSSetShaderResources(0, 128, nullSRVs);
+
+	// Draw ImGui as the last thing, before swapChain->Present()
+	ImGui::Render(); // Turns this frame's UI into renderable triangles
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen
+
+	// Present at the end of the frame
+	bool vsync = Graphics::VsyncState();
+	Graphics::SwapChain->Present(
+		vsync ? 1 : 0,
+		vsync ? 0 : DXGI_PRESENT_ALLOW_TEARING);
+
+	// Re-bind back buffer and depth buffer after presenting
+	Graphics::Context->OMSetRenderTargets(
+		1,
+		Graphics::BackBufferRTV.GetAddressOf(),
+		Graphics::DepthBufferDSV.Get());
 }
 
 // --------------------------------------------------------
@@ -991,6 +1023,13 @@ void Game::BuildUI()
 	if (ImGui::TreeNode("Shadow Map"))
 	{
 		ImGui::Image(shadowSRV.Get(), ImVec2(256, 256));
+		ImGui::TreePop();
+	}
+
+	// Node for post processes
+	if (ImGui::TreeNode("Post Process"))
+	{
+		ImGui::SliderInt("Blur Radius", &blurRadius, 0, 10);
 		ImGui::TreePop();
 	}
 
