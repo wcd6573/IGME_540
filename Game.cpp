@@ -537,7 +537,7 @@ void Game::CreateShadowMapResources()
 // --------------------------------------------------------
 void Game::CreatePostProcessResources()
 {
-	blurRadius = 5;
+	blurRadius = 0;
 
 	// Sampler state for post processing
 	D3D11_SAMPLER_DESC ppSampDesc = {};
@@ -689,9 +689,10 @@ void Game::Draw(float deltaTime, float totalTime)
 	ppPS->SetSamplerState("ClampSampler", ppSampler.Get());
 
 	// cbuffer values for blur pixel shader
-	ppPS->SetInt("blurRadius", blurRadius);
-	ppPS->SetFloat("pixelWidth", 1.0f / Window::Width());
-	ppPS->SetFloat("pixelHeight", 1.0f / Window::Height());
+	ppPS->SetInt("blurRadius", (int)blurRadius);
+	ppPS->SetFloat("pixelWidth", 1.0f / (float)Window::Width());
+	ppPS->SetFloat("pixelHeight", 1.0f / (float)Window::Height());
+	ppPS->CopyAllBufferData();
 
 	// Draw one triangle with UVs to perfectly cover the screen
 	Graphics::Context->Draw(3, 0);
@@ -1029,7 +1030,7 @@ void Game::BuildUI()
 	// Node for post processes
 	if (ImGui::TreeNode("Post Process"))
 	{
-		ImGui::SliderInt("Blur Radius", &blurRadius, 0, 10);
+		ImGui::SliderInt("Blur Radius", &blurRadius, 0, 20);
 		ImGui::TreePop();
 	}
 

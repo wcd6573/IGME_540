@@ -66,7 +66,7 @@ float4 main(VertexToPixel input) : SV_TARGET
     
     // --- Sample Albedo ---
     // Sample texture to get the proper surface color
-        float3 albedoColor = Albedo.Sample(BasicSampler, input.uv).rgb;
+    float3 albedoColor = Albedo.Sample(BasicSampler, input.uv).rgb;
     albedoColor = pow(albedoColor, 2.2f); // Un-gamma-correct
     albedoColor *= colorTint;  // Tint using provided value
     

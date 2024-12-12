@@ -4,7 +4,7 @@ William Duprey
 Blur Post Process Pixel Shader
 */
 
-cbuffer externalData : register(b0)
+cbuffer ExternalData : register(b0)
 {
     int blurRadius;
     float pixelWidth;
@@ -14,7 +14,7 @@ cbuffer externalData : register(b0)
 struct VertexToPixel
 {
 	float4 position : SV_POSITION;
-	float2 uv		: TEXCOORD0;
+	float2 uv		: TEXCOORD;
 };
 
 Texture2D Pixels			: register(t0);
@@ -22,9 +22,25 @@ SamplerState ClampSampler	: register(s0);
 
 float4 main(VertexToPixel input) : SV_TARGET
 {
-    float4 pixelColor = Pixels.Sample(ClampSampler, input.uv);
-	
-	// Process the image somehow
-	
-    return pixelColor;
+    // Track the total color and number of samples
+    float4 total = float4(0, 0, 0, 0);
+    int sampleCount = 0;
+    
+    // Loop through the "box"
+    for (int x = -blurRadius; x <= blurRadius; x++)
+    {
+        for (int y = -blurRadius; y <= blurRadius; y++)
+        {   
+            // Calculate the uv for this sample
+            float2 uv = input.uv;
+            uv += float2(x * pixelWidth, y * pixelHeight);
+            
+            // Add this color to the running total
+            total += Pixels.Sample(ClampSampler, uv);
+            sampleCount++;
+        }
+    }
+    
+    // Return the average
+    return total / sampleCount;
 }
