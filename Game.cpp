@@ -153,6 +153,13 @@ void Game::LoadShadersMaterialsMeshes()
 		std::make_shared<SimplePixelShader>(
 			Graphics::Device, Graphics::Context,
 			FixPath(L"Voronoi.cso").c_str());
+	
+	// Load shadow mapping vertex shader
+	shadowVS = std::make_shared<SimpleVertexShader>(
+		Graphics::Device, Graphics::Context,
+		FixPath(L"ShadowMapVS.cso").c_str());
+
+	// Load post process (blur) shaders
 	ppVS = std::make_shared<SimpleVertexShader>(
 		Graphics::Device, Graphics::Context,
 		FixPath(L"FullscreenVS.cso").c_str());
@@ -160,10 +167,11 @@ void Game::LoadShadersMaterialsMeshes()
 		Graphics::Device, Graphics::Context,
 		FixPath(L"BlurPS.cso").c_str());
 
-	// Load shadow mapping vertex shader
-	shadowVS = std::make_shared<SimpleVertexShader>(
-		Graphics::Device, Graphics::Context,
-		FixPath(L"ShadowMapVS.cso").c_str());
+	// Load cloud shader
+	std::shared_ptr<SimplePixelShader> cloudPS =
+		std::make_shared<SimplePixelShader>(
+			Graphics::Device, Graphics::Context,
+			FixPath(L"CloudPS.cso").c_str());
 
 	// --- Load textures ---
 	// Bronze textures
@@ -320,6 +328,10 @@ void Game::LoadShadersMaterialsMeshes()
 	mat->AddSampler("BasicSampler", sampler);
 	materials.push_back(mat);
 
+	// Special cloud material
+	mat = std::make_shared<Material>("Cloud", XMFLOAT3(1.0f, 1.0f, 1.0f), vertexShader, cloudPS, XMFLOAT2(1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f));
+	materials.push_back(mat);
+
 	// --- Load meshes from files ---
 	meshes.push_back(std::make_shared<Mesh>("Cube",
 		FixPath("../../Assets/Models/cube.obj").c_str()));
@@ -376,6 +388,10 @@ void Game::CreateEntities()
 	entities.push_back(std::make_shared<GameEntity>(
 		meshes[4], materials[4]));	// Torus
 	
+	// Make a cloud
+	entities.push_back(std::make_shared<GameEntity>(
+		meshes[0], materials[7]));
+
 	// Move those entities around
 	entities[0]->GetTransform()->MoveAbsolute(0, -0.5f, 0);
 	entities[1]->GetTransform()->MoveAbsolute(-6, 0, -1);
@@ -384,6 +400,7 @@ void Game::CreateEntities()
 	entities[4]->GetTransform()->MoveAbsolute(1.5f, 1.5f, 0);
 	entities[5]->GetTransform()->MoveAbsolute(6, 1.5f, 0);	
 	entities[5]->GetTransform()->Rotate(-XM_PIDIV4, 0, 0);
+	entities[6]->GetTransform()->MoveAbsolute(0, 5, 0);
 }
 
 void Game::CreateLights()
@@ -404,8 +421,8 @@ void Game::CreateLights()
 
 	Light directional3 = {};
 	directional3.Type = LIGHT_TYPE_DIRECTIONAL;
-	directional3.Direction = XMFLOAT3(0.0f, -1.0f, -1.0f);
-	directional3.Color = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	directional3.Direction = XMFLOAT3(0.5f, -1.0f, -1.0f);
+	directional3.Color = XMFLOAT3(0.0f, 0.0f, 1.0f);
 	directional3.Intensity = 1.0f;
 	
 	//Light point1 = {};
