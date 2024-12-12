@@ -40,6 +40,7 @@ private:
 	void CreateEntities();
 	void CreateLights();
 	void CreateShadowMapResources();
+	void CreatePostProcessResources();
 
 	// Draw helper methods
 	void RenderShadowMap();
@@ -76,7 +77,7 @@ private:
 	// tired to find it right now)
 	std::shared_ptr<Camera> activeCam;
 
-	// Shadow mapping fields
+	// --- Shadow mapping fields ---
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> shadowDSV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowSRV;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> shadowRasterizer;
@@ -87,5 +88,15 @@ private:
 	
 	UINT shadowMapResolution;
 	float lightProjectionSize;
+
+	// --- Post process fields ---
+	// Resources shared among all post processes
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> ppSampler;
+	std::shared_ptr<SimpleVertexShader> ppVS;
+
+	// Resources tied to a particular post process
+	std::shared_ptr<SimplePixelShader> ppPS;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> ppRTV;	// Rendering
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> ppSRV;	// Sampling
 };
 
