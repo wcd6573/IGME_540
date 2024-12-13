@@ -167,12 +167,6 @@ void Game::LoadShadersMaterialsMeshes()
 		Graphics::Device, Graphics::Context,
 		FixPath(L"BlurPS.cso").c_str());
 
-	// Load cloud shader
-	std::shared_ptr<SimplePixelShader> cloudPS =
-		std::make_shared<SimplePixelShader>(
-			Graphics::Device, Graphics::Context,
-			FixPath(L"CloudPS.cso").c_str());
-
 	// --- Load textures ---
 	// Bronze textures
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> bronzeAlbedoSRV;
@@ -328,10 +322,6 @@ void Game::LoadShadersMaterialsMeshes()
 	mat->AddSampler("BasicSampler", sampler);
 	materials.push_back(mat);
 
-	// Special cloud material
-	mat = std::make_shared<Material>("Cloud", XMFLOAT3(1.0f, 1.0f, 1.0f), vertexShader, cloudPS, XMFLOAT2(1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f));
-	materials.push_back(mat);
-
 	// --- Load meshes from files ---
 	meshes.push_back(std::make_shared<Mesh>("Cube",
 		FixPath("../../Assets/Models/cube.obj").c_str()));
@@ -387,10 +377,6 @@ void Game::CreateEntities()
 		meshes[3], materials[3]));	// Sphere
 	entities.push_back(std::make_shared<GameEntity>(
 		meshes[4], materials[4]));	// Torus
-	
-	// Make a cloud
-	entities.push_back(std::make_shared<GameEntity>(
-		meshes[0], materials[7]));
 
 	// Move those entities around
 	entities[0]->GetTransform()->MoveAbsolute(0, -0.5f, 0);
@@ -400,7 +386,6 @@ void Game::CreateEntities()
 	entities[4]->GetTransform()->MoveAbsolute(1.5f, 1.5f, 0);
 	entities[5]->GetTransform()->MoveAbsolute(6, 1.5f, 0);	
 	entities[5]->GetTransform()->Rotate(-XM_PIDIV4, 0, 0);
-	entities[6]->GetTransform()->MoveAbsolute(0, 5, 0);
 }
 
 void Game::CreateLights()
@@ -683,8 +668,6 @@ void Game::Draw(float deltaTime, float totalTime)
 		ps->SetInt("lightCount", (int)lights.size());
 		ps->SetShaderResourceView("ShadowMap", shadowSRV);
 		ps->SetSamplerState("ShadowSampler", shadowSampler);
-		ps->SetFloat("absorption", absorption);
-		ps->SetFloat3("objectPosition", entities[i]->GetTransform()->GetPosition());
 		entities[i]->Draw(activeCam);
 	}
 
@@ -1049,13 +1032,6 @@ void Game::BuildUI()
 	if (ImGui::TreeNode("Post Process"))
 	{
 		ImGui::SliderInt("Blur Radius", &blurRadius, 0, 20);
-		ImGui::TreePop();
-	}
-
-	// Node for cloud control
-	if (ImGui::TreeNode("Cloud"))
-	{
-		ImGui::SliderFloat("Absorption", &absorption, 0, 1);
 		ImGui::TreePop();
 	}
 
