@@ -663,7 +663,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	Graphics::Context->ClearRenderTargetView(blurRTV.Get(), bgColor.get());
 	Graphics::Context->ClearRenderTargetView(pixelizeRTV.Get(), bgColor.get());
 	// Set the post process render target
-	Graphics::Context->OMSetRenderTargets(1, blurRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
+	Graphics::Context->OMSetRenderTargets(1, pixelizeRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
 
 	// --- Draw entities ---
 	for (int i = 0; i < entities.size(); ++i)
@@ -695,8 +695,9 @@ void Game::Draw(float deltaTime, float totalTime)
 	// --- Post Process ---
 	// Set pixelizeRTV
 	Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
-	Graphics::Context->OMSetRenderTargets(1, pixelizeRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
+	//Graphics::Context->OMSetRenderTargets(1, pixelizeRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
 	
+	/*
 	// --- Blur ---
 	// Activate shaders and bind resources
 	ppVS->SetShader();
@@ -712,7 +713,7 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	// Draw one triangle with UVs to perfectly cover the screen
 	Graphics::Context->Draw(3, 0);
-
+	*/
 	// Unbind shadow map to fix D3D warnings
 	// (shadow map cannot be a depth buffer 
 	// and shader resource at the same time)
@@ -723,7 +724,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Restore back buffer
 	Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
 
-	//ppVS->SetShader();
+	ppVS->SetShader();
 	pixelizePS->SetShader();
 	pixelizePS->SetShaderResourceView("Pixels", pixelizeSRV.Get());
 	pixelizePS->SetSamplerState("ClampSampler", ppSampler.Get());
@@ -1065,8 +1066,11 @@ void Game::BuildUI()
 	// Node for post processes
 	if (ImGui::TreeNode("Post Process"))
 	{
+		ImGui::Image(blurSRV.Get(), ImVec2(Window::Width() / 5, Window::Height() / 5));
 		ImGui::SliderInt("Blur Radius", &blurRadius, 0, 20);
-		ImGui::SliderInt("Pixelize Radius", &pixelizeRadius, 0, 10);
+		ImGui::Image(pixelizeSRV.Get(), ImVec2(Window::Width() / 5, Window::Height() / 5));
+		ImGui::SliderInt("Pixelize Radius", &pixelizeRadius, 0, 20);
+		
 		ImGui::TreePop();
 	}
 
