@@ -684,6 +684,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		ps->SetShaderResourceView("ShadowMap", shadowSRV);
 		ps->SetSamplerState("ShadowSampler", shadowSampler);
 		ps->SetFloat("absorption", absorption);
+		ps->SetFloat3("objectPosition", entities[i]->GetTransform()->GetPosition());
 		entities[i]->Draw(activeCam);
 	}
 

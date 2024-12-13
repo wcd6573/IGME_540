@@ -6,12 +6,18 @@ Cloud Pixel Shader
 I was inspired by this video about AAA cloud rendering:
 https://www.youtube.com/watch?v=Qj_tK_mdRcA
 
-Which led me to reading through this paper about how 
+And the accompanying repository (which uses GLSL)
+https://github.com/simondevyoutube/Shaders_Clouds1/blob/main/shaders/common.glsl
+
+Also led me to reading through this paper about how 
 the Frostbite engine renders skies (section 5 on clouds):
 https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/s2016-pbs-frostbite-sky-clouds-new.pdf
 
 I also referenced this video on ray marching:
 https://www.youtube.com/watch?v=BNZtUB7yhX4
+
+I got the cube signed distance function from here:
+https://iquilezles.org/articles/distfunctions/
 */
 
 #include "ShaderIncludes.hlsli"
@@ -27,11 +33,17 @@ cbuffer ExternalData : register(b0)
     int lightCount;
     
     float absorption;
+    float3 objectPosition;
 }
 
-float signedDistance(float3 pos)
+// --------------------------------------------------------
+// Signed Distance Function from here:
+// https://iquilezles.org/articles/distfunctions/
+// --------------------------------------------------------
+float sdfCube(float3 p, float3 b)
 {
-    
+    float3 q = abs(p) - b;
+    return length(max(q, 0.0f)) + min(max(q.x, max(q.y, q.z)), 0.0f);
 }
 
 // --------------------------------------------------------
@@ -92,8 +104,39 @@ float4 main(VertexToPixel input) : SV_TARGET
         totalLight += lightResult;
     }
     
+    // Calculate the distance that a ray of light 
+    // would travel through the cube by ray marching
+    float step = 0.1f;
+    float hitThreshold = 0.1f;
+    int iterations = 0;
+    int maxIterations = 100;
+    float3 ray = cameraPosition;
+    float3 firstHit = float3(0, 0, 0);
+    float3 secondHit = float3(0, 0, 0);
+    bool hit = false;
+    while (iterations < maxIterations)
+    {
+        ray += (-toCam) * step;
+        bool calc = sdfCube(ray, objectPosition);
+        if (!hit && calc)
+        {
+            firstHit = ray;
+            hit = true;
+        }
+        else if (calc)
+        {
+            secondHit = ray;
+            break;
+        }
+        
+        iterations++;
+    }
+    
+    float dist = distance(firstHit, secondHit);
+    return dist;
+    
     // Apply Beer's law for absorption of light
-    totalLight *= exp(absorption * 1);
+    totalLight *= exp(absorption * dist);
     
     // Perform gamma correction and return the color
     return float4(totalLight, 1);
