@@ -568,20 +568,22 @@ void Game::CreatePostProcessResources()
 	textureDesc.Usage = D3D11_USAGE_DEFAULT;
 
 	// Create the resource (no need to track if after views are made)
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> ppTexture;
-	Graphics::Device->CreateTexture2D(&textureDesc, 0, ppTexture.GetAddressOf());
-	
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> blurTexture;
+	Graphics::Device->CreateTexture2D(&textureDesc, 0, blurTexture.GetAddressOf());
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> pixelizeTexture;
+	Graphics::Device->CreateTexture2D(&textureDesc, 0, pixelizeTexture.GetAddressOf());
+
 	// Create the render target view
 	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 	rtvDesc.Format = textureDesc.Format;
 	rtvDesc.Texture2D.MipSlice = 0;
 	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	Graphics::Device->CreateRenderTargetView(
-		ppTexture.Get(),
+		blurTexture.Get(),
 		&rtvDesc,
 		blurRTV.ReleaseAndGetAddressOf());
 	Graphics::Device->CreateRenderTargetView(
-		ppTexture.Get(),
+		pixelizeTexture.Get(),
 		&rtvDesc,
 		pixelizeRTV.ReleaseAndGetAddressOf());
 
@@ -589,11 +591,11 @@ void Game::CreatePostProcessResources()
 	// By passing it a null description for the SRV,
 	// it gives a default SRV with access to entire resource
 	Graphics::Device->CreateShaderResourceView(
-		ppTexture.Get(),
+		blurTexture.Get(),
 		0,
 		blurSRV.ReleaseAndGetAddressOf());
 	Graphics::Device->CreateShaderResourceView(
-		ppTexture.Get(),
+		pixelizeTexture.Get(),
 		0,
 		pixelizeSRV.ReleaseAndGetAddressOf());
 }
@@ -663,7 +665,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	Graphics::Context->ClearRenderTargetView(blurRTV.Get(), bgColor.get());
 	Graphics::Context->ClearRenderTargetView(pixelizeRTV.Get(), bgColor.get());
 	// Set the post process render target
-	Graphics::Context->OMSetRenderTargets(1, pixelizeRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
+	Graphics::Context->OMSetRenderTargets(1, blurRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
 
 	// --- Draw entities ---
 	for (int i = 0; i < entities.size(); ++i)
@@ -691,13 +693,11 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Frame END
 	// - These should happen exactly ONCE PER FRAME
 	// - At the very end of the frame (after drawing *everything*)
-	
+
 	// --- Post Process ---
 	// Set pixelizeRTV
-	Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
-	//Graphics::Context->OMSetRenderTargets(1, pixelizeRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
+	Graphics::Context->OMSetRenderTargets(1, pixelizeRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
 	
-	/*
 	// --- Blur ---
 	// Activate shaders and bind resources
 	ppVS->SetShader();
@@ -713,23 +713,17 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	// Draw one triangle with UVs to perfectly cover the screen
 	Graphics::Context->Draw(3, 0);
-	*/
-	// Unbind shadow map to fix D3D warnings
-	// (shadow map cannot be a depth buffer 
-	// and shader resource at the same time)
-	ID3D11ShaderResourceView* nullSRVs[128] = {};
-	Graphics::Context->PSSetShaderResources(0, 128, nullSRVs);
-
+	
 	// --- Pixelize ---
 	// Restore back buffer
 	Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
-
-	ppVS->SetShader();
+	
+	// Activate shaders and bind resources
 	pixelizePS->SetShader();
 	pixelizePS->SetShaderResourceView("Pixels", pixelizeSRV.Get());
 	pixelizePS->SetSamplerState("ClampSampler", ppSampler.Get());
 
-	// cbuffer values for blur pixel shader
+	// cbuffer values for pixelize pixel shader
 	pixelizePS->SetInt("pixelizeRadius", pixelizeRadius);
 	pixelizePS->SetFloat("pixelWidth", 1.0f / (float)Window::Width());
 	pixelizePS->SetFloat("pixelHeight", 1.0f / (float)Window::Height());
@@ -737,8 +731,12 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	// Draw one triangle with UVs to perfectly cover the screen
 	Graphics::Context->Draw(3, 0);
+	
+	// Unbind shadow map to fix D3D warnings
+	// (shadow map cannot be a depth buffer 
+	// and shader resource at the same time)
+	ID3D11ShaderResourceView* nullSRVs[128] = {};
 	Graphics::Context->PSSetShaderResources(0, 128, nullSRVs);
-
 
 	// Draw ImGui as the last thing, before swapChain->Present()
 	ImGui::Render(); // Turns this frame's UI into renderable triangles
