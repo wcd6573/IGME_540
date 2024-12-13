@@ -100,5 +100,8 @@ private:
 	std::shared_ptr<SimplePixelShader> ppPS;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> ppRTV;	// Rendering
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> ppSRV;	// Sampling
+
+	// --- Cloud fields ---
+	float absorption;
 };
 

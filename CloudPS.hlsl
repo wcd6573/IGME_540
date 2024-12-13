@@ -9,6 +9,9 @@ https://www.youtube.com/watch?v=Qj_tK_mdRcA
 Which led me to reading through this paper about how 
 the Frostbite engine renders skies (section 5 on clouds):
 https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/s2016-pbs-frostbite-sky-clouds-new.pdf
+
+I also referenced this video on ray marching:
+https://www.youtube.com/watch?v=BNZtUB7yhX4
 */
 
 #include "ShaderIncludes.hlsli"
@@ -19,8 +22,16 @@ https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/s2016-pbs-fros
 cbuffer ExternalData : register(b0)
 {
     float3 cameraPosition;
+    
     Light lights[NUM_LIGHTS];
     int lightCount;
+    
+    float absorption;
+}
+
+float signedDistance(float3 pos)
+{
+    
 }
 
 // --------------------------------------------------------
@@ -80,6 +91,9 @@ float4 main(VertexToPixel input) : SV_TARGET
 
         totalLight += lightResult;
     }
+    
+    // Apply Beer's law for absorption of light
+    totalLight *= exp(absorption * 1);
     
     // Perform gamma correction and return the color
     return float4(totalLight, 1);

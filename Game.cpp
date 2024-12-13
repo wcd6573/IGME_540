@@ -683,7 +683,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		ps->SetInt("lightCount", (int)lights.size());
 		ps->SetShaderResourceView("ShadowMap", shadowSRV);
 		ps->SetSamplerState("ShadowSampler", shadowSampler);
-
+		ps->SetFloat("absorption", absorption);
 		entities[i]->Draw(activeCam);
 	}
 
@@ -1048,6 +1048,13 @@ void Game::BuildUI()
 	if (ImGui::TreeNode("Post Process"))
 	{
 		ImGui::SliderInt("Blur Radius", &blurRadius, 0, 20);
+		ImGui::TreePop();
+	}
+
+	// Node for cloud control
+	if (ImGui::TreeNode("Cloud"))
+	{
+		ImGui::SliderFloat("Absorption", &absorption, 0, 1);
 		ImGui::TreePop();
 	}
 
