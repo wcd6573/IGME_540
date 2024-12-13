@@ -159,13 +159,16 @@ void Game::LoadShadersMaterialsMeshes()
 		Graphics::Device, Graphics::Context,
 		FixPath(L"ShadowMapVS.cso").c_str());
 
-	// Load post process (blur) shaders
+	// Load post process (blur and pixelize) shaders
 	ppVS = std::make_shared<SimpleVertexShader>(
 		Graphics::Device, Graphics::Context,
 		FixPath(L"FullscreenVS.cso").c_str());
-	ppPS = std::make_shared<SimplePixelShader>(
+	blurPS = std::make_shared<SimplePixelShader>(
 		Graphics::Device, Graphics::Context,
 		FixPath(L"BlurPS.cso").c_str());
+	pixelizePS = std::make_shared<SimplePixelShader>(
+		Graphics::Device, Graphics::Context,
+		FixPath(L"PixelizePS.cso").c_str());
 
 	// --- Load textures ---
 	// Bronze textures
@@ -540,6 +543,7 @@ void Game::CreateShadowMapResources()
 void Game::CreatePostProcessResources()
 {
 	blurRadius = 0;
+	pixelizeRadius = 0;
 
 	// Sampler state for post processing
 	D3D11_SAMPLER_DESC ppSampDesc = {};
@@ -575,7 +579,11 @@ void Game::CreatePostProcessResources()
 	Graphics::Device->CreateRenderTargetView(
 		ppTexture.Get(),
 		&rtvDesc,
-		ppRTV.ReleaseAndGetAddressOf());
+		blurRTV.ReleaseAndGetAddressOf());
+	Graphics::Device->CreateRenderTargetView(
+		ppTexture.Get(),
+		&rtvDesc,
+		pixelizeRTV.ReleaseAndGetAddressOf());
 
 	// Create the shader resource view
 	// By passing it a null description for the SRV,
@@ -583,7 +591,11 @@ void Game::CreatePostProcessResources()
 	Graphics::Device->CreateShaderResourceView(
 		ppTexture.Get(),
 		0,
-		ppSRV.ReleaseAndGetAddressOf());
+		blurSRV.ReleaseAndGetAddressOf());
+	Graphics::Device->CreateShaderResourceView(
+		ppTexture.Get(),
+		0,
+		pixelizeSRV.ReleaseAndGetAddressOf());
 }
 
 // --------------------------------------------------------
@@ -648,9 +660,10 @@ void Game::Draw(float deltaTime, float totalTime)
 	
 	// --- Post process... pre... process ---
 	// Clear post process render target
-	Graphics::Context->ClearRenderTargetView(ppRTV.Get(), bgColor.get());
+	Graphics::Context->ClearRenderTargetView(blurRTV.Get(), bgColor.get());
+	Graphics::Context->ClearRenderTargetView(pixelizeRTV.Get(), bgColor.get());
 	// Set the post process render target
-	Graphics::Context->OMSetRenderTargets(1, ppRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
+	Graphics::Context->OMSetRenderTargets(1, blurRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
 
 	// --- Draw entities ---
 	for (int i = 0; i < entities.size(); ++i)
@@ -680,30 +693,51 @@ void Game::Draw(float deltaTime, float totalTime)
 	// - At the very end of the frame (after drawing *everything*)
 	
 	// --- Post Process ---
-	// Restore back buffer
+	// Set pixelizeRTV
 	Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
+	Graphics::Context->OMSetRenderTargets(1, pixelizeRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
 	
+	// --- Blur ---
 	// Activate shaders and bind resources
 	ppVS->SetShader();
-	ppPS->SetShader();
-	ppPS->SetShaderResourceView("Pixels", ppSRV.Get());
-	ppPS->SetSamplerState("ClampSampler", ppSampler.Get());
+	blurPS->SetShader();
+	blurPS->SetShaderResourceView("Pixels", blurSRV.Get());
+	blurPS->SetSamplerState("ClampSampler", ppSampler.Get());
 
 	// cbuffer values for blur pixel shader
-	ppPS->SetInt("blurRadius", (int)blurRadius);
-	ppPS->SetFloat("pixelWidth", 1.0f / (float)Window::Width());
-	ppPS->SetFloat("pixelHeight", 1.0f / (float)Window::Height());
-	ppPS->CopyAllBufferData();
+	blurPS->SetInt("blurRadius", blurRadius);
+	blurPS->SetFloat("pixelWidth", 1.0f / (float)Window::Width());
+	blurPS->SetFloat("pixelHeight", 1.0f / (float)Window::Height());
+	blurPS->CopyAllBufferData();
 
 	// Draw one triangle with UVs to perfectly cover the screen
 	Graphics::Context->Draw(3, 0);
-
 
 	// Unbind shadow map to fix D3D warnings
 	// (shadow map cannot be a depth buffer 
 	// and shader resource at the same time)
 	ID3D11ShaderResourceView* nullSRVs[128] = {};
 	Graphics::Context->PSSetShaderResources(0, 128, nullSRVs);
+
+	// --- Pixelize ---
+	// Restore back buffer
+	Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
+
+	//ppVS->SetShader();
+	pixelizePS->SetShader();
+	pixelizePS->SetShaderResourceView("Pixels", pixelizeSRV.Get());
+	pixelizePS->SetSamplerState("ClampSampler", ppSampler.Get());
+
+	// cbuffer values for blur pixel shader
+	pixelizePS->SetInt("pixelizeRadius", pixelizeRadius);
+	pixelizePS->SetFloat("pixelWidth", 1.0f / (float)Window::Width());
+	pixelizePS->SetFloat("pixelHeight", 1.0f / (float)Window::Height());
+	pixelizePS->CopyAllBufferData();
+
+	// Draw one triangle with UVs to perfectly cover the screen
+	Graphics::Context->Draw(3, 0);
+	Graphics::Context->PSSetShaderResources(0, 128, nullSRVs);
+
 
 	// Draw ImGui as the last thing, before swapChain->Present()
 	ImGui::Render(); // Turns this frame's UI into renderable triangles
@@ -1032,6 +1066,7 @@ void Game::BuildUI()
 	if (ImGui::TreeNode("Post Process"))
 	{
 		ImGui::SliderInt("Blur Radius", &blurRadius, 0, 20);
+		ImGui::SliderInt("Pixelize Radius", &pixelizeRadius, 0, 10);
 		ImGui::TreePop();
 	}
 
