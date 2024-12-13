@@ -543,7 +543,7 @@ void Game::CreateShadowMapResources()
 void Game::CreatePostProcessResources()
 {
 	blurRadius = 0;
-	pixelizeRadius = 0;
+	pixelizeRadius = 1;
 
 	// Sampler state for post processing
 	D3D11_SAMPLER_DESC ppSampDesc = {};
@@ -1067,7 +1067,7 @@ void Game::BuildUI()
 		ImGui::Image(blurSRV.Get(), ImVec2(Window::Width() / 5, Window::Height() / 5));
 		ImGui::SliderInt("Blur Radius", &blurRadius, 0, 20);
 		ImGui::Image(pixelizeSRV.Get(), ImVec2(Window::Width() / 5, Window::Height() / 5));
-		ImGui::SliderInt("Pixelize Radius", &pixelizeRadius, 0, 20);
+		ImGui::SliderInt("Pixelize Radius", &pixelizeRadius, 1, 20);
 		
 		ImGui::TreePop();
 	}
