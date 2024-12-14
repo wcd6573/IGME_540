@@ -26,8 +26,8 @@ SamplerState ClampSampler : register(s0);
 // ---------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-    float x = int(input.position.x) % pixelizeRadius;
-    float y = int(input.position.y) % pixelizeRadius;
+    float x = uint(input.position.x) % pixelizeRadius;
+    float y = uint(input.position.y) % pixelizeRadius;
     
     x = floor(pixelizeRadius / 2.0f) - x;
     y = floor(pixelizeRadius / 2.0f) - y;

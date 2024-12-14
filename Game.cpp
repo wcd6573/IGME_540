@@ -407,11 +407,11 @@ void Game::CreateLights()
 	directional2.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
 	directional2.Intensity = 1.0f;
 
-	Light directional3 = {};
-	directional3.Type = LIGHT_TYPE_DIRECTIONAL;
-	directional3.Direction = XMFLOAT3(0.5f, -1.0f, -1.0f);
-	directional3.Color = XMFLOAT3(0.0f, 0.0f, 1.0f);
-	directional3.Intensity = 1.0f;
+	//Light directional3 = {};
+	//directional3.Type = LIGHT_TYPE_DIRECTIONAL;
+	//directional3.Direction = XMFLOAT3(0.5f, -1.0f, -1.0f);
+	//directional3.Color = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	//directional3.Intensity = 1.0f;
 	
 	//Light point1 = {};
 	//point1.Type = LIGHT_TYPE_POINT;
@@ -429,7 +429,7 @@ void Game::CreateLights()
 
 	//lights.push_back(directional1);
 	lights.push_back(directional2);
-	lights.push_back(directional3);
+	//lights.push_back(directional3);
 	//lights.push_back(point1);
 	//lights.push_back(point2);
 
@@ -695,7 +695,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	// - At the very end of the frame (after drawing *everything*)
 
 	// --- Post Process ---
-	// Set pixelizeRTV
+	// Render to the pixelizeRTV
 	Graphics::Context->OMSetRenderTargets(1, pixelizeRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
 	
 	// --- Blur ---
@@ -1057,18 +1057,17 @@ void Game::BuildUI()
 	// Node for shadow map debug
 	if (ImGui::TreeNode("Shadow Map"))
 	{
-		ImGui::Image(shadowSRV.Get(), ImVec2(256, 256));
+		ImGui::Image(shadowSRV.Get(), ImVec2(256.0f, 256.0f));
 		ImGui::TreePop();
 	}
 
 	// Node for post processes
 	if (ImGui::TreeNode("Post Process"))
 	{
-		ImGui::Image(blurSRV.Get(), ImVec2(Window::Width() / 5, Window::Height() / 5));
+		ImGui::Image(blurSRV.Get(), ImVec2(Window::Width() / 5.0f, Window::Height() / 5.0f));
 		ImGui::SliderInt("Blur Radius", &blurRadius, 0, 20);
-		ImGui::Image(pixelizeSRV.Get(), ImVec2(Window::Width() / 5, Window::Height() / 5));
-		ImGui::SliderInt("Pixelize Radius", &pixelizeRadius, 1, 20);
-		
+		ImGui::Image(pixelizeSRV.Get(), ImVec2(Window::Width() / 5.0f, Window::Height() / 5.0f));
+		ImGui::SliderInt("Pixelize Radius", &pixelizeRadius, 1, 50);
 		ImGui::TreePop();
 	}
 
